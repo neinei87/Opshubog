@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="OpsHubOG" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23007AFF'/%3E%3Ctext x='90' y='112' font-size='78' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3E%3E_%3C/text%3E%3C/svg%3E" />
+  <title>OpsHubOG — Apple Device & App Console</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            ios: {
+              blue: '#007AFF',
+              blueDark: '#0A84FF',
+              green: '#34C759',
+              greenDark: '#30D158',
+              orange: '#FF9500',
+              orangeDark: '#FF9F0A',
+              red: '#FF3B30',
+              redDark: '#FF453A',
+              purple: '#AF52DE',
+              purpleDark: '#BF5AF2',
+              bgLight: '#F2F2F7',
+              bgDark: '#000000',
+              cardLight: '#FFFFFF',
+              cardDark: '#1C1C1E',
+              elevatedDark: '#2C2C2E',
+              borderLight: '#E5E5EA',
+              borderDark: '#38383A',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Smooth iOS-inspired scrollbars & touch handling */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+    body {
+      overscroll-behavior-y: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .glass-header {
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .glass-nav {
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-slide-up {
+      animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="bg-ios-bgLight dark:bg-ios-bgDark text-zinc-900 dark:text-zinc-100 font-sans antialiased selection:bg-blue-500/20">
+
+  <!-- Main Responsive Frame Wrapper -->
+  <div id="app-shell" class="min-h-screen flex flex-col md:flex-row max-w-6xl mx-auto relative">
+
+    <!-- Desktop Sidebar (Hidden on Mobile) -->
+    <aside class="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-ios-borderLight dark:border-ios-borderDark bg-white/80 dark:bg-ios-cardDark/80 glass-nav z-30">
+      <div class="p-5 border-b border-ios-borderLight dark:border-ios-borderDark flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
+            <i data-lucide="terminal" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-base tracking-tight leading-none">OpsHubOG</h1>
+            <span class="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Local-First Console</span>
+          </div>
+        </div>
+      </div>
+
+      <nav id="desktop-nav" class="flex-1 p-3 space-y-1 overflow-y-auto">
+        <!-- Populated by JS -->
+      </nav>
+
+      <div class="p-4 border-t border-ios-borderLight dark:border-ios-borderDark space-y-2">
+        <button onclick="openCapabilityMatrix()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium bg-zinc-100 dark:bg-ios-elevatedDark hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
+          <span class="flex items-center gap-2"><i data-lucide="shield-alert" class="w-4 h-4 text-blue-500"></i> Capability Matrix</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-zinc-400"></i>
+        </button>
+        <button onclick="exportBackupJSON()" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Export State JSON
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Column -->
+    <div class="flex-1 md:pl-64 flex flex-col min-h-screen pb-24 md:pb-10">
+
+      <!-- Sticky Top Glass Header -->
+      <header class="sticky top-0 z-20 glass-header bg-ios-bgLight/85 dark:bg-ios-bgDark/85 border-b border-ios-borderLight/70 dark:border-ios-borderDark/70 px-4 py-3">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5 md:hidden">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
+              <i data-lucide="terminal" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h1 class="font-bold text-base tracking-tight">OpsHubOG</h1>
+                <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">SIMULATED</span>
+              </div>
+              <p class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-none">Apple Device & App Console</p>
+            </div>
+          </div>
+
+          <div class="hidden md:flex items-center gap-2">
+            <h2 id="desktop-page-title" class="text-lg font-bold tracking-tight">Projects</h2>
+            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25">Local-First Simulation Mode</span>
+          </div>
+
+          <!-- Header Quick Controls -->
+          <div class="flex items-center gap-1.5">
+            <button onclick="openCloudSyncModal()" id="sync-status-btn" title="Firebase Cloud Sync Status & Setup" class="px-2.5 py-2 rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark text-xs font-semibold flex items-center gap-1.5 hover:bg-zinc-100 dark:hover:bg-ios-elevatedDark transition">
+              <span id="sync-dot" class="w-2 h-2 rounded-full bg-zinc-400"></span>
+              <span id="sync-label" class="hidden sm:inline text-zinc-600 dark:text-zinc-300">Local Only</span>
+            </button>
+            <button onclick="openCapabilityMatrix()" title="Capability Matrix & Boundaries" class="p-2.5 rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-ios-elevatedDark transition">
+              <i data-lucide="book-open-check" class="w-4 h-4 text-blue-500"></i>
+            </button>
+            <button onclick="exportBackupJSON()" title="Export Full Console Backup JSON" class="p-2.5 rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-ios-elevatedDark transition">
+              <i data-lucide="download" class="w-4 h-4 text-emerald-500"></i>
+            </button>
+            <button onclick="toggleTheme()" id="theme-toggle-btn" title="Toggle Dark/Light Theme" class="p-2.5 rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-ios-elevatedDark transition">
+              <i data-lucide="moon" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Global Search & Filter Bar -->
+        <div class="mt-3 flex items-center gap-2">
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input
+              id="global-search"
+              type="text"
+              placeholder="Filter bundles, UDIDs, containers, devices..."
+              oninput="handleSearch(this.value)"
+              class="w-full pl-9 pr-8 py-2 text-sm rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark focus:outline-none focus:ring-2 focus:ring-blue-500/40 placeholder:text-zinc-400"
+            />
+            <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600">
+              <i data-lucide="x-circle" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <select id="env-filter" onchange="handleEnvFilter(this.value)" class="px-3 py-2 text-xs font-medium rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+            <option value="ALL">All Envs</option>
+            <option value="Production">Production</option>
+            <option value="Staging">Staging</option>
+            <option value="Development">Development</option>
+          </select>
+        </div>
+      </header>
+
+      <!-- Pending Approvals Banner (Shown whenever pendingCount > 0) -->
+      <div id="pending-banner" class="hidden mx-4 mt-3 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+            <i data-lucide="shield-question" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <p id="pending-banner-text" class="text-xs font-semibold text-amber-800 dark:text-amber-300">1 Action Awaiting Approval</p>
+            <p class="text-[11px] text-amber-700/80 dark:text-amber-400/80">High-impact mutations require explicit operator sign-off.</p>
+          </div>
+        </div>
+        <button onclick="switchTab('activity')" class="px-3 py-1.5 rounded-xl bg-amber-500 text-white text-xs font-semibold shadow-sm hover:bg-amber-600 transition shrink-0">
+          Review
+        </button>
+      </div>
+
+      <!-- Dynamic Tab Content Container -->
+      <main id="main-content" class="flex-1 p-4 space-y-4">
+        <!-- Rendered by JS -->
+      </main>
+
+      <!-- Footer Safety Notice -->
+      <footer class="px-4 py-4 text-center text-[11px] text-zinc-500 dark:text-zinc-500 space-y-1">
+        <p>OpsHubOG Local-First Prototype • Stored in <code class="font-mono">localStorage</code> • Zero private keys or Apple ID secrets stored.</p>
+        <button onclick="resetDemoData()" class="underline hover:text-zinc-700 dark:hover:text-zinc-300">Reset Default Console Seed Data</button>
+      </footer>
+    </div>
+
+    <!-- Mobile Bottom Tab Bar -->
+    <nav id="mobile-nav" class="md:hidden fixed bottom-0 inset-x-0 z-30 glass-nav bg-white/90 dark:bg-ios-cardDark/90 border-t border-ios-borderLight dark:border-ios-borderDark px-1 pb-safe">
+      <div id="mobile-nav-items" class="grid grid-cols-6 gap-0.5 py-1.5">
+        <!-- Populated by JS -->
+      </div>
+    </nav>
+  </div>
+
+  <!-- Modal / Drawer Backdrop -->
+  <div id="modal-backdrop" onclick="closeModal()" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity"></div>
+
+  <!-- Reusable Bottom Sheet / Modal Container -->
+  <div id="modal-container" class="hidden fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center z-50 pointer-events-none">
+    <div id="modal-card" class="pointer-events-auto w-full md:max-w-xl max-h-[90vh] overflow-y-auto bg-white dark:bg-ios-cardDark rounded-t-3xl md:rounded-3xl border border-ios-borderLight dark:border-ios-borderDark shadow-2xl p-5 animate-slide-up">
+      <!-- Modal content injected dynamically -->
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-4 right-4 left-4 md:left-auto md:w-96 z-50 space-y-2 pointer-events-none"></div>
+
+  <script type="module">
+    import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, OAuthProvider, GithubAuthProvider, signInWithPopup, linkWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+    const FB_CONFIG_KEY = 'opshubog_firebase_config_v1';
+    const ECOSYSTEM_SYNC_KEY = 'opshubog_ecosystem_sync_v1';
+    const DEFAULT_FB_CONFIG = {
+      apiKey: "AIzaSyDt9vLu7bzJWrsH_Sd1AzvNG04Ggkg72WU",
+      authDomain: "opshubog.firebaseapp.com",
+      projectId: "opshubog",
+      storageBucket: "opshubog.firebasestorage.app",
+      messagingSenderId: "865147913445",
+      appId: "1:865147913445:web:28693827ecbdf41aa5c00c",
+      measurementId: "G-XK6H1QRNS2"
+    };
+
+    window.fbRuntime = {
+      app: null,
+      auth: null,
+      db: null,
+      user: null,
+      googleAccessToken: null,
+      githubAccessToken: null,
+      unsubscribeSnapshot: null,
+      isRemoteUpdate: false
+    };
+
+    function getEcosystemMeta() {
+      try {
+        return JSON.parse(localStorage.getItem(ECOSYSTEM_SYNC_KEY)) || {
+          googleDriveFileId: null,
+          lastGoogleDriveSync: null,
+          githubGistId: null,
+          githubUsername: null,
+          lastGithubSync: null,
+          lastICloudExport: null
+        };
+      } catch (e) {
+        return { googleDriveFileId: null, lastGoogleDriveSync: null, githubGistId: null, githubUsername: null, lastGithubSync: null, lastICloudExport: null };
+      }
+    }
+
+    function saveEcosystemMeta(meta) {
+      localStorage.setItem(ECOSYSTEM_SYNC_KEY, JSON.stringify(meta));
+    }
+
+    function getSavedFirebaseConfig() {
+      try {
+        const raw = localStorage.getItem(FB_CONFIG_KEY);
+        return raw ? JSON.parse(raw) : DEFAULT_FB_CONFIG;
+      } catch (e) {
+        return DEFAULT_FB_CONFIG;
+      }
+    }
+
+    function updateSyncBadge(status, labelText) {
+      const dot = document.getElementById('sync-dot');
+      const label = document.getElementById('sync-label');
+      if (!dot || !label) return;
+      const colors = {
+        local: 'bg-zinc-400',
+        syncing: 'bg-amber-500 animate-pulse',
+        synced: 'bg-emerald-500',
+        error: 'bg-red-500'
+      };
+      dot.className = `w-2 h-2 rounded-full ${colors[status] || colors.local}`;
+      label.textContent = labelText;
+    }
+
+    window.initFirebaseSync = async function(configObj) {
+      if (!configObj || !configObj.apiKey || !configObj.projectId) {
+        updateSyncBadge('local', 'Local Only');
+        return;
+      }
+      try {
+        if (window.fbRuntime.unsubscribeSnapshot) {
+          window.fbRuntime.unsubscribeSnapshot();
+          window.fbRuntime.unsubscribeSnapshot = null;
+        }
+        for (const existing of getApps()) {
+          await deleteApp(existing);
+        }
+        const app = initializeApp(configObj);
+        const auth = getAuth(app);
+        const db = initializeFirestore(app, {
+          localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+        });
+        window.fbRuntime.app = app;
+        window.fbRuntime.auth = auth;
+        window.fbRuntime.db = db;
+
+        onAuthStateChanged(auth, (user) => {
+          window.fbRuntime.user = user;
+          if (user) {
+            updateSyncBadge('syncing', 'Connecting...');
+            const userDocRef = doc(db, 'opshubog_users', user.uid);
+            window.fbRuntime.unsubscribeSnapshot = onSnapshot(userDocRef, { includeMetadataChanges: true }, (snap) => {
+              const source = snap.metadata.fromCache ? 'Cached (Offline)' : 'Multi-Cloud Synced';
+              updateSyncBadge('synced', source);
+              if (snap.exists() && !snap.metadata.hasPendingWrites) {
+                const remoteData = snap.data();
+                if (remoteData && remoteData.consoleState) {
+                  window.fbRuntime.isRemoteUpdate = true;
+                  window.applyRemoteState(remoteData.consoleState);
+                  window.fbRuntime.isRemoteUpdate = false;
+                }
+              } else if (!snap.exists()) {
+                window.pushStateToFirestore();
+              }
+            }, (err) => {
+              console.error('Firestore snapshot error:', err);
+              updateSyncBadge('error', 'Sync Error');
+            });
+          } else {
+            updateSyncBadge('local', 'Sign In to Sync');
+          }
+          if (document.getElementById('cloud-sync-modal-body')) {
+            window.openCloudSyncModal();
+          }
+        });
+      } catch (err) {
+        console.error('Firebase init failed:', err);
+        updateSyncBadge('error', 'Config Error');
+        if (window.showToast) window.showToast('Firebase config error: ' + err.message, 'error');
+      }
+    };
+
+    window.pushStateToFirestore = async function() {
+      if (window.fbRuntime.isRemoteUpdate) return;
+      if (!window.fbRuntime.db || !window.fbRuntime.user) return;
+      try {
+        const userDocRef = doc(window.fbRuntime.db, 'opshubog_users', window.fbRuntime.user.uid);
+        await setDoc(userDocRef, {
+          consoleState: window.getExportableState(),
+          updatedAt: new Date().toISOString(),
+          operatorEmail: window.fbRuntime.user.email || 'operator'
+        }, { merge: true });
+      } catch (err) {
+        console.error('Firestore push failed:', err);
+        updateSyncBadge('error', 'Sync Failed');
+      }
+    };
+
+    // 1. Google Sign-In + Google Drive Scope
+    window.signInWithGoogleSync = async function() {
+      if (!window.fbRuntime.auth) {
+        window.showToast('Save your Firebase Web Config first.', 'warning');
+        return;
+      }
+      try {
+        const provider = new GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/drive.file');
+        const result = await signInWithPopup(window.fbRuntime.auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        if (credential && credential.accessToken) {
+          window.fbRuntime.googleAccessToken = credential.accessToken;
+        }
+        window.logConsoleAudit('Connected Google Services (Firestore + Drive)', 'Synced operator state with Google Cloud & Drive scope');
+        window.showToast('Signed in with Google & Drive scope!', 'success');
+      } catch (err) {
+        window.showToast('Google Sign-In failed: ' + err.message, 'error');
+      }
+    };
+
+    // Push JSON snapshot directly to user's Google Drive (drive.file scope)
+    window.syncSnapshotToGoogleDrive = async function() {
+      if (!window.fbRuntime.googleAccessToken) {
+        window.showToast('Re-authenticate with Google to refresh Drive session token.', 'warning');
+        await window.signInWithGoogleSync();
+        if (!window.fbRuntime.googleAccessToken) return;
+      }
+      try {
+        const meta = getEcosystemMeta();
+        const payload = JSON.stringify(window.getExportableState(), null, 2);
+        const boundary = '-------opshubog314159265358979323846';
+        const metadata = {
+          name: 'opshubog-console-backup.json',
+          mimeType: 'application/json'
+        };
+        const multipartRequestBody =
+          `\r\n--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
+          JSON.stringify(metadata) +
+          `\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n` +
+          payload +
+          `\r\n--${boundary}--`;
+
+        const url = meta.googleDriveFileId
+          ? `https://www.googleapis.com/upload/drive/v3/files/${meta.googleDriveFileId}?uploadType=multipart`
+          : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+        const method = meta.googleDriveFileId ? 'PATCH' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Authorization': 'Bearer ' + window.fbRuntime.googleAccessToken,
+            'Content-Type': `multipart/related; boundary="${boundary}"`
+          },
+          body: multipartRequestBody
+        });
+        if (!res.ok) throw new Error(`Google Drive API (${res.status})`);
+        const data = await res.json();
+        meta.googleDriveFileId = data.id;
+        meta.lastGoogleDriveSync = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        saveEcosystemMeta(meta);
+        window.logConsoleAudit('Synced Snapshot to Google Drive', `Updated opshubog-console-backup.json (${data.id.slice(0, 8)}...)`);
+        window.showToast('Backed up state to Google Drive!', 'success');
+        window.openCloudSyncModal();
+      } catch (err) {
+        window.showToast('Google Drive sync failed: ' + err.message, 'error');
+      }
+    };
+
+    // 2. GitHub Account OAuth Sign-In / Link + Private Gist Sync
+    window.signInWithGithubSync = async function() {
+      if (!window.fbRuntime.auth) {
+        window.showToast('Save your Firebase Web Config first.', 'warning');
+        return;
+      }
+      try {
+        const provider = new GithubAuthProvider();
+        provider.addScope('gist');
+        const result = window.fbRuntime.user
+          ? await linkWithPopup(window.fbRuntime.user, provider)
+          : await signInWithPopup(window.fbRuntime.auth, provider);
+        const credential = GithubAuthProvider.credentialFromResult(result);
+        const meta = getEcosystemMeta();
+        if (credential && credential.accessToken) {
+          window.fbRuntime.githubAccessToken = credential.accessToken;
+        }
+        const ghProfile = result._tokenResponse || {};
+        if (ghProfile.screenName) meta.githubUsername = ghProfile.screenName;
+        saveEcosystemMeta(meta);
+        window.logConsoleAudit('Linked GitHub Account', `Connected GitHub (${meta.githubUsername || 'OAuth'}) with Gist sync scope`);
+        window.showToast('GitHub account connected!', 'success');
+        window.openCloudSyncModal();
+      } catch (err) {
+        if (err.code === 'auth/credential-already-in-use') {
+          window.showToast('GitHub account already linked—signing in directly.', 'info');
+          const provider = new GithubAuthProvider();
+          provider.addScope('gist');
+          const res = await signInWithPopup(window.fbRuntime.auth, provider);
+          const cred = GithubAuthProvider.credentialFromResult(res);
+          if (cred && cred.accessToken) window.fbRuntime.githubAccessToken = cred.accessToken;
+          window.openCloudSyncModal();
+        } else {
+          window.showToast('GitHub Sign-In failed: ' + err.message, 'error');
+        }
+      }
+    };
+
+    window.syncSnapshotToGithubGist = async function() {
+      if (!window.fbRuntime.githubAccessToken) {
+        window.showToast('Authenticating with GitHub for Gist write access...', 'info');
+        await window.signInWithGithubSync();
+        if (!window.fbRuntime.githubAccessToken) return;
+      }
+      try {
+        const meta = getEcosystemMeta();
+        const body = {
+          description: 'OpsHubOG Apple Device & App Console — Encrypted/Private State Snapshot',
+          public: false,
+          files: {
+            'opshubog-console-state.json': {
+              content: JSON.stringify(window.getExportableState(), null, 2)
+            }
+          }
+        };
+        const url = meta.githubGistId
+          ? `https://api.github.com/gists/${meta.githubGistId}`
+          : 'https://api.github.com/gists';
+        const method = meta.githubGistId ? 'PATCH' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: {
+            'Authorization': 'Bearer ' + window.fbRuntime.githubAccessToken,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error(`GitHub Gist API (${res.status})`);
+        const data = await res.json();
+        meta.githubGistId = data.id;
+        meta.lastGithubSync = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        saveEcosystemMeta(meta);
+        window.logConsoleAudit('Synced Snapshot to Private GitHub Gist', `Gist ID: ${data.id.slice(0, 10)}...`);
+        window.showToast('Synced state to Private GitHub Gist!', 'success');
+        window.openCloudSyncModal();
+      } catch (err) {
+        window.showToast('GitHub Gist sync failed: ' + err.message, 'error');
+      }
+    };
+
+    // 3. Sign in with Apple
+    window.signInWithAppleSync = async function() {
+      if (!window.fbRuntime.auth) {
+        window.showToast('Save your Firebase Web Config first.', 'warning');
+        return;
+      }
+      try {
+        const provider = new OAuthProvider('apple.com');
+        provider.addScope('email');
+        provider.addScope('name');
+        await signInWithPopup(window.fbRuntime.auth, provider);
+        window.showToast('Signed in with Apple!', 'success');
+      } catch (err) {
+        window.showToast('Apple Sign-In failed: ' + err.message, 'error');
+      }
+    };
+
+    // 4. iCloud Drive File Export & Import (iOS Files / macOS iCloud Drive)
+    window.exportToICloudDrive = function() {
+      const meta = getEcosystemMeta();
+      meta.lastICloudExport = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      saveEcosystemMeta(meta);
+      window.exportBackupJSON();
+      window.logConsoleAudit('Exported iCloud Drive Snapshot', 'Saved JSON archive for iOS Files / iCloud Drive sync');
+      window.showToast('In iOS Share/Downloads, save to iCloud Drive > OpsHubOG.', 'info');
+      window.openCloudSyncModal();
+    };
+
+    window.importSnapshotFile = function(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!parsed || !parsed.projects) throw new Error('Invalid OpsHubOG snapshot format');
+          window.applyRemoteState(parsed);
+          window.pushStateToFirestore();
+          window.logConsoleAudit('Imported State Snapshot', `Restored console state from ${file.name}`);
+          window.showToast('Snapshot restored & synced across devices!', 'success');
+          window.closeModal();
+        } catch (err) {
+          window.showToast('Import failed: ' + err.message, 'error');
+        }
+      };
+      reader.readAsText(file);
+    };
+
+    window.signOutCloudSync = async function() {
+      if (window.fbRuntime.auth) {
+        await signOut(window.fbRuntime.auth);
+        window.fbRuntime.googleAccessToken = null;
+        window.fbRuntime.githubAccessToken = null;
+        window.showToast('Signed out of cloud sync (local copy retained).', 'info');
+      }
+    };
+
+    window.saveFirebaseConfigFromUI = function() {
+      const raw = document.getElementById('fb-config-input').value.trim();
+      if (!raw) {
+        localStorage.removeItem(FB_CONFIG_KEY);
+        window.showToast('Cleared Firebase config.', 'info');
+        window.openCloudSyncModal();
+        return;
+      }
+      try {
+        let jsonStr = raw;
+        const braceStart = raw.indexOf('{');
+        const braceEnd = raw.lastIndexOf('}');
+        if (braceStart !== -1 && braceEnd !== -1) {
+          jsonStr = raw.slice(braceStart, braceEnd + 1);
+        }
+        jsonStr = jsonStr.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/'/g, '"');
+        const parsed = JSON.parse(jsonStr);
+        if (!parsed.apiKey || !parsed.projectId) {
+          throw new Error('Missing apiKey or projectId');
+        }
+        localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(parsed));
+        window.showToast('Firebase config saved!', 'success');
+        window.initFirebaseSync(parsed);
+        window.openCloudSyncModal();
+      } catch (err) {
+        window.showToast('Invalid config format. Paste the firebaseConfig { ... } object.', 'error');
+      }
+    };
+
+    window.openCloudSyncModal = function() {
+      const savedCfg = getSavedFirebaseConfig();
+      const user = window.fbRuntime.user;
+      const meta = getEcosystemMeta();
+      const linkedProviders = user ? (user.providerData || []).map(p => p.providerId) : [];
+
+      const html = `
+        <div id="cloud-sync-modal-body" class="space-y-4">
+          <div class="flex items-center justify-between border-b border-ios-borderLight dark:border-ios-borderDark pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-base">Unified Multi-Ecosystem Sync</h3>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400">Google Services • GitHub Account • iCloud Drive</p>
+              </div>
+            </div>
+            <button onclick="closeModal()" class="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-ios-elevatedDark">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          ${user ? `
+            <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Live Firestore Sync Active
+                </p>
+                <p class="text-xs text-zinc-600 dark:text-zinc-300 truncate mt-0.5">${user.email || user.displayName || user.uid}</p>
+              </div>
+              <button onclick="signOutCloudSync()" class="px-3 py-1.5 rounded-xl bg-white dark:bg-ios-elevatedDark border border-ios-borderLight dark:border-ios-borderDark text-xs font-semibold hover:bg-zinc-100 transition shrink-0">
+                Sign Out
+              </button>
+            </div>
+          ` : `
+            <div class="p-3.5 rounded-2xl bg-zinc-100 dark:bg-ios-elevatedDark space-y-2.5">
+              <p class="text-xs text-zinc-600 dark:text-zinc-300">Sign in to activate live cross-device sync across Google, GitHub, and your Apple devices:</p>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button onclick="signInWithGoogleSync()" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition">
+                  <i data-lucide="chrome" class="w-4 h-4"></i> Google
+                </button>
+                <button onclick="signInWithGithubSync()" class="py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-900 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition">
+                  <i data-lucide="github" class="w-4 h-4"></i> GitHub
+                </button>
+                <button onclick="signInWithAppleSync()" class="py-2.5 px-3 rounded-xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition">
+                  <i data-lucide="apple" class="w-4 h-4"></i> Apple
+                </button>
+              </div>
+            </div>
+          `}
+
+          <!-- Ecosystem Bridges -->
+          <div class="space-y-2.5">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Connected Ecosystem Bridges</p>
+
+            <!-- 1. Google Services (Firestore + Google Drive) -->
+            <div class="p-3 rounded-2xl border border-ios-borderLight dark:border-ios-borderDark bg-white dark:bg-ios-cardDark flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold">Google Services</span>
+                  <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-500/15 text-blue-600 dark:text-blue-400">Firestore + Drive</span>
+                </div>
+                <p class="text-[11px] text-zinc-500 mt-0.5">
+                  ${meta.lastGoogleDriveSync ? `Last Drive snapshot: ${meta.lastGoogleDriveSync}` : 'Real-time DB active; push JSON backup to Google Drive'}
+                </p>
+              </div>
+              <button onclick="syncSnapshotToGoogleDrive()" class="px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold shrink-0 transition">
+                Sync Drive
+              </button>
+            </div>
+
+            <!-- 2. GitHub Account (OAuth + Private Gist) -->
+            <div class="p-3 rounded-2xl border border-ios-borderLight dark:border-ios-borderDark bg-white dark:bg-ios-cardDark flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold">GitHub Account</span>
+                  <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-purple-500/15 text-purple-600 dark:text-purple-400">Private Gist</span>
+                </div>
+                <p class="text-[11px] text-zinc-500 mt-0.5">
+                  ${meta.githubUsername ? `@${meta.githubUsername}` : (linkedProviders.includes('github.com') ? 'Linked' : 'Not linked')}
+                  ${meta.lastGithubSync ? ` • Synced ${meta.lastGithubSync}` : ' • Push state to private Gist'}
+                </p>
+              </div>
+              <button onclick="syncSnapshotToGithubGist()" class="px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 text-xs font-semibold shrink-0 transition">
+                ${linkedProviders.includes('github.com') ? 'Sync Gist' : 'Link & Sync'}
+              </button>
+            </div>
+
+            <!-- 3. Apple iCloud Drive & CloudKit Boundary -->
+            <div class="p-3 rounded-2xl border border-ios-borderLight dark:border-ios-borderDark bg-white dark:bg-ios-cardDark space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-bold">Apple iCloud & Files</span>
+                    <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">User-Scoped</span>
+                  </div>
+                  <p class="text-[11px] text-zinc-500 mt-0.5">
+                    ${meta.lastICloudExport ? `Last exported: ${meta.lastICloudExport}` : 'Save/load JSON snapshot via iCloud Drive (Files app)'}
+                  </p>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button onclick="exportToICloudDrive()" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold transition">
+                    Save
+                  </button>
+                  <label class="px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-ios-elevatedDark hover:bg-zinc-200 text-xs font-semibold cursor-pointer transition">
+                    Load
+                    <input type="file" accept=".json,application/json" onchange="importSnapshotFile(event)" class="hidden" />
+                  </label>
+                </div>
+              </div>
+              <p class="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                Web PWAs cannot access private CloudKit containers directly without a native Swift wrapper; use iCloud Drive JSON snapshots or CloudKit Dashboard in the <strong>iCloud</strong> tab.
+              </p>
+            </div>
+          </div>
+
+          <details class="rounded-2xl border border-ios-borderLight dark:border-ios-borderDark p-3">
+            <summary class="text-xs font-semibold cursor-pointer select-none">Advanced: Firebase Web Config (Pre-configured for opshubog)</summary>
+            <div class="mt-2.5 space-y-2">
+              <textarea id="fb-config-input" rows="4" placeholder='{"apiKey": "...", "authDomain": "...", "projectId": "..."}' class="w-full p-2.5 rounded-xl font-mono text-[11px] bg-zinc-50 dark:bg-ios-elevatedDark border border-ios-borderLight dark:border-ios-borderDark focus:outline-none focus:ring-2 focus:ring-blue-500/40">${savedCfg ? JSON.stringify(savedCfg, null, 2) : ''}</textarea>
+              <button onclick="saveFirebaseConfigFromUI()" class="w-full py-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-semibold transition">
+                Update Firebase Config
+              </button>
+            </div>
+          </details>
+        </div>
+      `;
+      window.openModalWithHTML(html);
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const cfg = getSavedFirebaseConfig();
+      if (cfg) {
+        window.initFirebaseSync(cfg);
+      } else {
+        updateSyncBadge('local', 'Local Only');
+      }
+    });
+  </script>
+  <script>
