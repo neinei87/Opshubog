@@ -6,240 +6,615 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="OpsHubOG" />
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23007AFF'/%3E%3Ctext x='90' y='112' font-size='78' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3E%3E_%3C/text%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23007AFF'/%3E%3Cstop offset='100%25' stop-color='%235856D6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='180' height='180' rx='42' fill='url(%23g)'/%3E%3Ctext x='90' y='112' font-size='76' text-anchor='middle' fill='white' font-family='-apple-system,sans-serif' font-weight='700'%3E%3E_%3C/text%3E%3C/svg%3E" />
   <title>OpsHubOG — Apple Device & App Console</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Inter & JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            ios: {
-              blue: '#007AFF',
-              blueDark: '#0A84FF',
-              green: '#34C759',
-              greenDark: '#30D158',
-              orange: '#FF9500',
-              orangeDark: '#FF9F0A',
-              red: '#FF3B30',
-              redDark: '#FF453A',
-              purple: '#AF52DE',
-              purpleDark: '#BF5AF2',
-              bgLight: '#F2F2F7',
-              bgDark: '#000000',
-              cardLight: '#FFFFFF',
-              cardDark: '#1C1C1E',
-              elevatedDark: '#2C2C2E',
-              borderLight: '#E5E5EA',
-              borderDark: '#38383A',
-            }
-          }
-        }
+  <style>
+    :root {
+      --bg: #F2F2F7;
+      --card: #FFFFFF;
+      --elevated: #F8F8FA;
+      --text: #111827;
+      --muted: #6B7280;
+      --border: #E5E7EB;
+      --blue: #007AFF;
+      --blue-soft: rgba(0, 122, 255, 0.12);
+      --green: #34C759;
+      --green-soft: rgba(52, 199, 89, 0.14);
+      --amber: #FF9500;
+      --amber-soft: rgba(255, 149, 0, 0.14);
+      --red: #FF3B30;
+      --red-soft: rgba(255, 59, 48, 0.14);
+      --purple: #AF52DE;
+      --purple-soft: rgba(175, 82, 222, 0.14);
+      --shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+      --glass: rgba(242, 242, 247, 0.88);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #000000;
+        --card: #1C1C1E;
+        --elevated: #2C2C2E;
+        --text: #F9FAFB;
+        --muted: #9CA3AF;
+        --border: #38383A;
+        --blue: #0A84FF;
+        --blue-soft: rgba(10, 132, 255, 0.18);
+        --green: #30D158;
+        --green-soft: rgba(48, 209, 88, 0.18);
+        --amber: #FF9F0A;
+        --amber-soft: rgba(255, 159, 10, 0.18);
+        --red: #FF453A;
+        --red-soft: rgba(255, 69, 58, 0.18);
+        --purple: #BF5AF2;
+        --purple-soft: rgba(191, 90, 242, 0.18);
+        --shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+        --glass: rgba(18, 18, 20, 0.88);
       }
     }
-  </script>
-  <style>
-    /* Smooth iOS-inspired scrollbars & touch handling */
+
     * {
-      -webkit-tap-highlight-color: transparent;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
+
     body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
       overscroll-behavior-y: none;
     }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
+
+    code, pre, .mono {
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
     }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+
+    .app-wrap {
+      max-width: 820px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 32px;
     }
-    .glass-header {
+
+    /* Sticky Glass Header */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--glass);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
     }
-    .glass-nav {
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
     }
-    @keyframes slideUp {
-      from { transform: translateY(100%); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
     }
-    .animate-slide-up {
-      animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #007AFF, #5856D6);
+      color: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      flex-shrink: 0;
+      box-shadow: 0 3px 10px rgba(0, 122, 255, 0.28);
     }
+
+    .brand-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin: 1px 0 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .badge-amber { background: var(--amber-soft); color: var(--amber); }
+    .badge-green { background: var(--green-soft); color: var(--green); }
+    .badge-blue { background: var(--blue-soft); color: var(--blue); }
+    .badge-red { background: var(--red-soft); color: var(--red); }
+    .badge-purple { background: var(--purple-soft); color: var(--purple); }
+
+    /* Sync Status Pill */
+    .sync-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+      transition: transform 0.12s ease;
+    }
+
+    .sync-pill:active { transform: scale(0.96); }
+
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9CA3AF;
+    }
+
+    .sync-dot.synced { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+    .sync-dot.syncing { background: var(--amber); }
+    .sync-dot.error { background: var(--red); }
+
+    /* Search & Filter Row */
+    .controls-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .input, .select, .textarea {
+      width: 100%;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .input:focus, .select:focus, .textarea:focus {
+      border-color: var(--blue);
+    }
+
+    .search-input {
+      padding: 9px 12px 9px 34px;
+    }
+
+    .env-select {
+      width: auto;
+      padding: 9px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* Segmented Tabs */
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+      background: var(--elevated);
+      padding: 4px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 8px 6px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--card);
+      color: var(--blue);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .tab-count {
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    /* Main Content Area */
+    .main {
+      flex: 1;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .section-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 2px 0 0;
+    }
+
+    /* Cards & Buttons */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+      word-break: break-all;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--blue); color: #FFFFFF; }
+    .btn-green { background: var(--green); color: #FFFFFF; }
+    .btn-amber { background: var(--amber); color: #FFFFFF; }
+    .btn-red { background: var(--red-soft); color: var(--red); border-color: rgba(255, 59, 48, 0.25); }
+    .btn-ghost { background: var(--elevated); color: var(--text); border-color: var(--border); }
+    .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 10px; }
+    .btn-full { width: 100%; }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .chip {
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .chip.enabled {
+      background: var(--blue-soft);
+      border-color: rgba(0, 122, 255, 0.3);
+      color: var(--blue);
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 12px 0;
+    }
+
+    .banner {
+      padding: 12px 14px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .banner-amber {
+      background: var(--amber-soft);
+      border: 1px solid rgba(255, 149, 0, 0.32);
+    }
+
+    .banner-blue {
+      background: var(--blue-soft);
+      border: 1px solid rgba(0, 122, 255, 0.28);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: auto;
+      padding: 18px 16px 8px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .link-btn {
+      background: none;
+      border: none;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 600;
+      text-decoration: underline;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    /* Bottom Sheet / Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.52);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 50;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    @media (min-width: 640px) {
+      .modal-backdrop { align-items: center; padding: 16px; }
+    }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 540px;
+      max-height: 88vh;
+      overflow-y: auto;
+      background: var(--card);
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      border: 1px solid var(--border);
+      padding: 18px 18px calc(22px + env(safe-area-inset-bottom));
+      box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    @media (min-width: 640px) {
+      .modal-sheet { border-radius: 24px; }
+    }
+
+    .form-group {
+      margin-top: 12px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: var(--muted);
+    }
+
+    .form-input {
+      padding: 10px 12px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: calc(14px + env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 70;
+      background: #111827;
+      color: #FFFFFF;
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+      max-width: 92vw;
+      text-align: center;
+      display: none;
+    }
+
+    .toast.show { display: block; }
   </style>
 </head>
-<body class="bg-ios-bgLight dark:bg-ios-bgDark text-zinc-900 dark:text-zinc-100 font-sans antialiased selection:bg-blue-500/20">
-
-  <!-- Main Responsive Frame Wrapper -->
-  <div id="app-shell" class="min-h-screen flex flex-col md:flex-row max-w-6xl mx-auto relative">
-
-    <!-- Desktop Sidebar (Hidden on Mobile) -->
-    <aside class="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-ios-borderLight dark:border-ios-borderDark bg-white/80 dark:bg-ios-cardDark/80 glass-nav z-30">
-      <div class="p-5 border-b border-ios-borderLight dark:border-ios-borderDark flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
-            <i data-lucide="terminal" class="w-5 h-5"></i>
-          </div>
+<body>
+  <div class="app-wrap">
+    <!-- Sticky Header -->
+    <header class="header">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-icon">&gt;_</div>
           <div>
-            <h1 class="font-bold text-base tracking-tight leading-none">OpsHubOG</h1>
-            <span class="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">Local-First Console</span>
+            <div class="brand-title-row">
+              <h1 class="brand-title">OpsHubOG</h1>
+              <span id="mode-badge" class="badge badge-amber">LOCAL</span>
+            </div>
+            <p class="brand-sub">Apple Device &amp; App Console</p>
           </div>
         </div>
+
+        <button id="sync-pill-btn" class="sync-pill" type="button" onclick="openCloudSyncModal()">
+          <span id="sync-dot" class="sync-dot"></span>
+          <span id="sync-pill-text">Local Only</span>
+        </button>
       </div>
 
-      <nav id="desktop-nav" class="flex-1 p-3 space-y-1 overflow-y-auto">
-        <!-- Populated by JS -->
+      <!-- Search & Environment Filter -->
+      <div class="controls-row">
+        <div class="search-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input id="search-input" class="input search-input" type="text" placeholder="Filter bundles, UDIDs, containers..." oninput="setSearch(this.value)" />
+        </div>
+        <select id="env-select" class="select env-select" onchange="setEnvFilter(this.value)">
+          <option value="ALL">All Envs</option>
+          <option value="Development">Development</option>
+          <option value="TestFlight">TestFlight</option>
+          <option value="Production">Production</option>
+        </select>
+      </div>
+
+      <!-- 4 Main Console Tabs with Inline SVGs -->
+      <nav class="tabs" aria-label="Console Sections">
+        <button id="tab-apps" class="tab-btn active" type="button" onclick="switchTab('apps')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+          </svg>
+          <span>Apps</span>
+          <span id="count-apps" class="tab-count">0</span>
+        </button>
+
+        <button id="tab-devices" class="tab-btn" type="button" onclick="switchTab('devices')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2.5"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+          <span>Devices</span>
+          <span id="count-devices" class="tab-count">0</span>
+        </button>
+
+        <button id="tab-icloud" class="tab-btn" type="button" onclick="switchTab('icloud')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
+          </svg>
+          <span>iCloud</span>
+          <span id="count-icloud" class="tab-count">0</span>
+        </button>
+
+        <button id="tab-gates" class="tab-btn" type="button" onclick="switchTab('gates')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
+          </svg>
+          <span>Gates</span>
+          <span id="count-gates" class="tab-count">0</span>
+        </button>
       </nav>
+    </header>
 
-      <div class="p-4 border-t border-ios-borderLight dark:border-ios-borderDark space-y-2">
-        <button onclick="openCapabilityMatrix()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium bg-zinc-100 dark:bg-ios-elevatedDark hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
-          <span class="flex items-center gap-2"><i data-lucide="shield-alert" class="w-4 h-4 text-blue-500"></i> Capability Matrix</span>
-          <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-zinc-400"></i>
-        </button>
-        <button onclick="exportBackupJSON()" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition">
-          <i data-lucide="download" class="w-3.5 h-3.5"></i> Export State JSON
-        </button>
-      </div>
-    </aside>
+    <!-- Main Dynamic Content -->
+    <main id="main-container" class="main"></main>
 
-    <!-- Main Content Column -->
-    <div class="flex-1 md:pl-64 flex flex-col min-h-screen pb-24 md:pb-10">
-
-      <!-- Sticky Top Glass Header -->
-      <header class="sticky top-0 z-20 glass-header bg-ios-bgLight/85 dark:bg-ios-bgDark/85 border-b border-ios-borderLight/70 dark:border-ios-borderDark/70 px-4 py-3">
-        <div class="flex items-center justify-between gap-2">
-          <div class="flex items-center gap-2.5 md:hidden">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-sm">
-              <i data-lucide="terminal" class="w-4 h-4"></i>
-            </div>
-            <div>
-              <div class="flex items-center gap-1.5">
-                <h1 class="font-bold text-base tracking-tight">OpsHubOG</h1>
-                <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20">SIMULATED</span>
-              </div>
-              <p class="text-[11px] text-zinc-500 dark:text-zinc-400 leading-none">Apple Device & App Console</p>
-            </div>
-          </div>
-
-          <div class="hidden md:flex items-center gap-2">
-            <h2 id="desktop-page-title" class="text-lg font-bold tracking-tight">Projects</h2>
-            <span class="px-2 py-0.5 text-[11px] font-semibold rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25">Local-First Simulation Mode</span>
-          </div>
-
-          <!-- Header Quick Controls -->
-          <div class="flex items-center gap-1.5">
-            <button onclick="openCloudSyncModal()" id="sync-status-btn" title="Firebase Cloud Sync Status & Setup" class="px-2.5 py-2 rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark text-xs font-semibold flex items-center gap-1.5 hover:bg-zinc-100 dark:hover:bg-ios-elevatedDark transition">
-              <span id="sync-dot" class="w-2 h-2 rounded-full bg-zinc-400"></span>
-              <span id="sync-label" class="hidden sm:inline text-zinc-600 dark:text-zinc-300">Local Only</span>
-            </button>
-            <button onclick="openCapabilityMatrix()" title="Capability Matrix & Boundaries" class="p-2.5 rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-ios-elevatedDark transition">
-              <i data-lucide="book-open-check" class="w-4 h-4 text-blue-500"></i>
-            </button>
-            <button onclick="exportBackupJSON()" title="Export Full Console Backup JSON" class="p-2.5 rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-ios-elevatedDark transition">
-              <i data-lucide="download" class="w-4 h-4 text-emerald-500"></i>
-            </button>
-            <button onclick="toggleTheme()" id="theme-toggle-btn" title="Toggle Dark/Light Theme" class="p-2.5 rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-ios-elevatedDark transition">
-              <i data-lucide="moon" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Global Search & Filter Bar -->
-        <div class="mt-3 flex items-center gap-2">
-          <div class="relative flex-1">
-            <i data-lucide="search" class="w-4 h-4 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-            <input
-              id="global-search"
-              type="text"
-              placeholder="Filter bundles, UDIDs, containers, devices..."
-              oninput="handleSearch(this.value)"
-              class="w-full pl-9 pr-8 py-2 text-sm rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark focus:outline-none focus:ring-2 focus:ring-blue-500/40 placeholder:text-zinc-400"
-            />
-            <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600">
-              <i data-lucide="x-circle" class="w-4 h-4"></i>
-            </button>
-          </div>
-          <select id="env-filter" onchange="handleEnvFilter(this.value)" class="px-3 py-2 text-xs font-medium rounded-xl bg-white dark:bg-ios-cardDark border border-ios-borderLight dark:border-ios-borderDark focus:outline-none focus:ring-2 focus:ring-blue-500/40">
-            <option value="ALL">All Envs</option>
-            <option value="Production">Production</option>
-            <option value="Staging">Staging</option>
-            <option value="Development">Development</option>
-          </select>
-        </div>
-      </header>
-
-      <!-- Pending Approvals Banner (Shown whenever pendingCount > 0) -->
-      <div id="pending-banner" class="hidden mx-4 mt-3 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
-            <i data-lucide="shield-question" class="w-4 h-4"></i>
-          </div>
-          <div>
-            <p id="pending-banner-text" class="text-xs font-semibold text-amber-800 dark:text-amber-300">1 Action Awaiting Approval</p>
-            <p class="text-[11px] text-amber-700/80 dark:text-amber-400/80">High-impact mutations require explicit operator sign-off.</p>
-          </div>
-        </div>
-        <button onclick="switchTab('activity')" class="px-3 py-1.5 rounded-xl bg-amber-500 text-white text-xs font-semibold shadow-sm hover:bg-amber-600 transition shrink-0">
-          Review
-        </button>
-      </div>
-
-      <!-- Dynamic Tab Content Container -->
-      <main id="main-content" class="flex-1 p-4 space-y-4">
-        <!-- Rendered by JS -->
-      </main>
-
-      <!-- Footer Safety Notice -->
-      <footer class="px-4 py-4 text-center text-[11px] text-zinc-500 dark:text-zinc-500 space-y-1">
-        <p>OpsHubOG Local-First Prototype • Stored in <code class="font-mono">localStorage</code> • Zero private keys or Apple ID secrets stored.</p>
-        <button onclick="resetDemoData()" class="underline hover:text-zinc-700 dark:hover:text-zinc-300">Reset Default Console Seed Data</button>
-      </footer>
-    </div>
-
-    <!-- Mobile Bottom Tab Bar -->
-    <nav id="mobile-nav" class="md:hidden fixed bottom-0 inset-x-0 z-30 glass-nav bg-white/90 dark:bg-ios-cardDark/90 border-t border-ios-borderLight dark:border-ios-borderDark px-1 pb-safe">
-      <div id="mobile-nav-items" class="grid grid-cols-6 gap-0.5 py-1.5">
-        <!-- Populated by JS -->
-      </div>
-    </nav>
+    <!-- Footer -->
+    <footer class="footer">
+      <div>OpsHubOG Local-First Prototype • Stored in <code>localStorage</code> &amp; optional Cloud Firestore • Zero private keys or Apple ID secrets stored.</div>
+      <button class="link-btn" type="button" onclick="confirmResetSeedData()">Reset Default Console Seed Data</button>
+    </footer>
   </div>
 
-  <!-- Modal / Drawer Backdrop -->
-  <div id="modal-backdrop" onclick="closeModal()" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-xs transition-opacity"></div>
-
-  <!-- Reusable Bottom Sheet / Modal Container -->
-  <div id="modal-container" class="hidden fixed inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center z-50 pointer-events-none">
-    <div id="modal-card" class="pointer-events-auto w-full md:max-w-xl max-h-[90vh] overflow-y-auto bg-white dark:bg-ios-cardDark rounded-t-3xl md:rounded-3xl border border-ios-borderLight dark:border-ios-borderDark shadow-2xl p-5 animate-slide-up">
-      <!-- Modal content injected dynamically -->
-    </div>
+  <!-- Reusable Bottom Sheet Modal -->
+  <div id="modal-backdrop" class="modal-backdrop" onclick="if(event.target===this) closeModal()">
+    <div id="modal-sheet" class="modal-sheet"></div>
   </div>
 
-  <!-- Toast Notification Container -->
-  <div id="toast-container" class="fixed top-4 right-4 left-4 md:left-auto md:w-96 z-50 space-y-2 pointer-events-none"></div>
+  <!-- Toast Notification -->
+  <div id="toast" class="toast"></div>
 
-  <script type="module">
-    import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, OAuthProvider, GithubAuthProvider, signInWithPopup, linkWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+  <!-- Non-blocking Firebase Compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" defer></script>
 
-    const FB_CONFIG_KEY = 'opshubog_firebase_config_v1';
-    const ECOSYSTEM_SYNC_KEY = 'opshubog_ecosystem_sync_v1';
-    const DEFAULT_FB_CONFIG = {
+  <script>
+    /* =========================================================================
+       1. EMBEDDED DEFAULT FIREBASE CONFIG (Project: opshubog)
+       ========================================================================= */
+    const DEFAULT_FIREBASE_CONFIG = {
       apiKey: "AIzaSyDt9vLu7bzJWrsH_Sd1AzvNG04Ggkg72WU",
       authDomain: "opshubog.firebaseapp.com",
       projectId: "opshubog",
@@ -249,508 +624,1148 @@
       measurementId: "G-XK6H1QRNS2"
     };
 
-    window.fbRuntime = {
-      app: null,
-      auth: null,
-      db: null,
-      user: null,
-      googleAccessToken: null,
-      githubAccessToken: null,
-      unsubscribeSnapshot: null,
-      isRemoteUpdate: false
-    };
+    const STORAGE_KEY = "opshubog_console_state_v2";
+    const FB_CONFIG_KEY = "opshubog_firebase_config_v2";
+    const META_KEY = "opshubog_sync_meta_v2";
 
-    function getEcosystemMeta() {
-      try {
-        return JSON.parse(localStorage.getItem(ECOSYSTEM_SYNC_KEY)) || {
-          googleDriveFileId: null,
-          lastGoogleDriveSync: null,
-          githubGistId: null,
-          githubUsername: null,
-          lastGithubSync: null,
-          lastICloudExport: null
-        };
-      } catch (e) {
-        return { googleDriveFileId: null, lastGoogleDriveSync: null, githubGistId: null, githubUsername: null, lastGithubSync: null, lastICloudExport: null };
-      }
-    }
-
-    function saveEcosystemMeta(meta) {
-      localStorage.setItem(ECOSYSTEM_SYNC_KEY, JSON.stringify(meta));
-    }
-
-    function getSavedFirebaseConfig() {
-      try {
-        const raw = localStorage.getItem(FB_CONFIG_KEY);
-        return raw ? JSON.parse(raw) : DEFAULT_FB_CONFIG;
-      } catch (e) {
-        return DEFAULT_FB_CONFIG;
-      }
-    }
-
-    function updateSyncBadge(status, labelText) {
-      const dot = document.getElementById('sync-dot');
-      const label = document.getElementById('sync-label');
-      if (!dot || !label) return;
-      const colors = {
-        local: 'bg-zinc-400',
-        syncing: 'bg-amber-500 animate-pulse',
-        synced: 'bg-emerald-500',
-        error: 'bg-red-500'
-      };
-      dot.className = `w-2 h-2 rounded-full ${colors[status] || colors.local}`;
-      label.textContent = labelText;
-    }
-
-    window.initFirebaseSync = async function(configObj) {
-      if (!configObj || !configObj.apiKey || !configObj.projectId) {
-        updateSyncBadge('local', 'Local Only');
-        return;
-      }
-      try {
-        if (window.fbRuntime.unsubscribeSnapshot) {
-          window.fbRuntime.unsubscribeSnapshot();
-          window.fbRuntime.unsubscribeSnapshot = null;
-        }
-        for (const existing of getApps()) {
-          await deleteApp(existing);
-        }
-        const app = initializeApp(configObj);
-        const auth = getAuth(app);
-        const db = initializeFirestore(app, {
-          localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
-        });
-        window.fbRuntime.app = app;
-        window.fbRuntime.auth = auth;
-        window.fbRuntime.db = db;
-
-        onAuthStateChanged(auth, (user) => {
-          window.fbRuntime.user = user;
-          if (user) {
-            updateSyncBadge('syncing', 'Connecting...');
-            const userDocRef = doc(db, 'opshubog_users', user.uid);
-            window.fbRuntime.unsubscribeSnapshot = onSnapshot(userDocRef, { includeMetadataChanges: true }, (snap) => {
-              const source = snap.metadata.fromCache ? 'Cached (Offline)' : 'Multi-Cloud Synced';
-              updateSyncBadge('synced', source);
-              if (snap.exists() && !snap.metadata.hasPendingWrites) {
-                const remoteData = snap.data();
-                if (remoteData && remoteData.consoleState) {
-                  window.fbRuntime.isRemoteUpdate = true;
-                  window.applyRemoteState(remoteData.consoleState);
-                  window.fbRuntime.isRemoteUpdate = false;
-                }
-              } else if (!snap.exists()) {
-                window.pushStateToFirestore();
-              }
-            }, (err) => {
-              console.error('Firestore snapshot error:', err);
-              updateSyncBadge('error', 'Sync Error');
-            });
-          } else {
-            updateSyncBadge('local', 'Sign In to Sync');
-          }
-          if (document.getElementById('cloud-sync-modal-body')) {
-            window.openCloudSyncModal();
-          }
-        });
-      } catch (err) {
-        console.error('Firebase init failed:', err);
-        updateSyncBadge('error', 'Config Error');
-        if (window.showToast) window.showToast('Firebase config error: ' + err.message, 'error');
-      }
-    };
-
-    window.pushStateToFirestore = async function() {
-      if (window.fbRuntime.isRemoteUpdate) return;
-      if (!window.fbRuntime.db || !window.fbRuntime.user) return;
-      try {
-        const userDocRef = doc(window.fbRuntime.db, 'opshubog_users', window.fbRuntime.user.uid);
-        await setDoc(userDocRef, {
-          consoleState: window.getExportableState(),
-          updatedAt: new Date().toISOString(),
-          operatorEmail: window.fbRuntime.user.email || 'operator'
-        }, { merge: true });
-      } catch (err) {
-        console.error('Firestore push failed:', err);
-        updateSyncBadge('error', 'Sync Failed');
-      }
-    };
-
-    // 1. Google Sign-In + Google Drive Scope
-    window.signInWithGoogleSync = async function() {
-      if (!window.fbRuntime.auth) {
-        window.showToast('Save your Firebase Web Config first.', 'warning');
-        return;
-      }
-      try {
-        const provider = new GoogleAuthProvider();
-        provider.addScope('https://www.googleapis.com/auth/drive.file');
-        const result = await signInWithPopup(window.fbRuntime.auth, provider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        if (credential && credential.accessToken) {
-          window.fbRuntime.googleAccessToken = credential.accessToken;
-        }
-        window.logConsoleAudit('Connected Google Services (Firestore + Drive)', 'Synced operator state with Google Cloud & Drive scope');
-        window.showToast('Signed in with Google & Drive scope!', 'success');
-      } catch (err) {
-        window.showToast('Google Sign-In failed: ' + err.message, 'error');
-      }
-    };
-
-    // Push JSON snapshot directly to user's Google Drive (drive.file scope)
-    window.syncSnapshotToGoogleDrive = async function() {
-      if (!window.fbRuntime.googleAccessToken) {
-        window.showToast('Re-authenticate with Google to refresh Drive session token.', 'warning');
-        await window.signInWithGoogleSync();
-        if (!window.fbRuntime.googleAccessToken) return;
-      }
-      try {
-        const meta = getEcosystemMeta();
-        const payload = JSON.stringify(window.getExportableState(), null, 2);
-        const boundary = '-------opshubog314159265358979323846';
-        const metadata = {
-          name: 'opshubog-console-backup.json',
-          mimeType: 'application/json'
-        };
-        const multipartRequestBody =
-          `\r\n--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
-          JSON.stringify(metadata) +
-          `\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n` +
-          payload +
-          `\r\n--${boundary}--`;
-
-        const url = meta.googleDriveFileId
-          ? `https://www.googleapis.com/upload/drive/v3/files/${meta.googleDriveFileId}?uploadType=multipart`
-          : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-        const method = meta.googleDriveFileId ? 'PATCH' : 'POST';
-
-        const res = await fetch(url, {
-          method,
-          headers: {
-            'Authorization': 'Bearer ' + window.fbRuntime.googleAccessToken,
-            'Content-Type': `multipart/related; boundary="${boundary}"`
+    /* =========================================================================
+       2. DEFAULT SEED DATA
+       ========================================================================= */
+    function getDefaultState() {
+      return {
+        apps: [
+          {
+            id: "app-1",
+            name: "OpsHubOG Console",
+            bundleId: "com.opshubog.console",
+            version: "1.4.0 (42)",
+            env: "Production",
+            teamId: "9X4K2L8M1P",
+            capabilities: ["Push Notifications", "Sign in with Apple", "iCloud CloudKit", "App Groups"],
+            testflightReady: true
           },
-          body: multipartRequestBody
-        });
-        if (!res.ok) throw new Error(`Google Drive API (${res.status})`);
-        const data = await res.json();
-        meta.googleDriveFileId = data.id;
-        meta.lastGoogleDriveSync = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        saveEcosystemMeta(meta);
-        window.logConsoleAudit('Synced Snapshot to Google Drive', `Updated opshubog-console-backup.json (${data.id.slice(0, 8)}...)`);
-        window.showToast('Backed up state to Google Drive!', 'success');
-        window.openCloudSyncModal();
-      } catch (err) {
-        window.showToast('Google Drive sync failed: ' + err.message, 'error');
-      }
+          {
+            id: "app-2",
+            name: "FieldTelemetry iOS",
+            bundleId: "com.opshubog.telemetry",
+            version: "0.9.2 (18)",
+            env: "TestFlight",
+            teamId: "9X4K2L8M1P",
+            capabilities: ["Background Modes", "Push Notifications", "Associated Domains"],
+            testflightReady: true
+          },
+          {
+            id: "app-3",
+            name: "KeyVault Companion",
+            bundleId: "com.opshubog.keyvault.dev",
+            version: "0.4.0 (7)",
+            env: "Development",
+            teamId: "9X4K2L8M1P",
+            capabilities: ["App Groups", "Keychain Sharing"],
+            testflightReady: false
+          }
+        ],
+        devices: [
+          {
+            id: "dev-1",
+            name: "Nayeli’s iPhone 16 Pro",
+            platform: "iPhone",
+            os: "iOS 18.4",
+            udid: "00008140-001A48922E80001C",
+            profileStatus: "Active (Ad-Hoc + Dev)"
+          },
+          {
+            id: "dev-2",
+            name: "Studio iPad Pro 13\"",
+            platform: "iPad",
+            os: "iPadOS 18.4",
+            udid: "00008132-0009512C1402802E",
+            profileStatus: "Active (Dev)"
+          },
+          {
+            id: "dev-3",
+            name: "MacBook Pro M3 Max",
+            platform: "Mac",
+            os: "macOS 15.4",
+            udid: "8F2C4E19-7B3A-5D10-9E42-1A0B8C7D6E5F",
+            profileStatus: "Managed Provisioning"
+          }
+        ],
+        containers: [
+          {
+            id: "ck-1",
+            identifier: "iCloud.com.opshubog.console",
+            env: "Production",
+            recordTypes: ["OperatorProfile", "DeviceAudit", "ReleaseGate"],
+            schemaStatus: "Deployed to Production",
+            lastSync: "Verified"
+          },
+          {
+            id: "ck-2",
+            identifier: "iCloud.com.opshubog.telemetry",
+            env: "Development",
+            recordTypes: ["SensorPacket", "SessionLog"],
+            schemaStatus: "Development Schema Ready",
+            lastSync: "Awaiting Promotion"
+          }
+        ],
+        gates: [
+          {
+            id: "gate-1",
+            title: "Promote CloudKit Schema: iCloud.com.opshubog.telemetry → Production",
+            scope: "iCloud / CloudKit",
+            risk: "High",
+            status: "Pending",
+            requestedAt: "Today, 9:30 AM"
+          }
+        ],
+        logs: [
+          {
+            id: "log-1",
+            action: "Initialized OpsHubOG Console",
+            detail: "Local-first storage & Firebase opshubog config loaded",
+            time: "Just now"
+          }
+        ]
+      };
+    }
+
+    /* =========================================================================
+       3. APP STATE & STORAGE HELPERS
+       ========================================================================= */
+    let activeTab = "apps";
+    let searchQuery = "";
+    let envFilter = "ALL";
+    let consoleState = loadState();
+
+    const fbRuntime = {
+      initialized: false,
+      user: null,
+      unsubscribe: null,
+      isRemoteApply: false
     };
 
-    // 2. GitHub Account OAuth Sign-In / Link + Private Gist Sync
-    window.signInWithGithubSync = async function() {
-      if (!window.fbRuntime.auth) {
-        window.showToast('Save your Firebase Web Config first.', 'warning');
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return getDefaultState();
+        const parsed = JSON.parse(raw);
+        return {
+          apps: Array.isArray(parsed.apps) ? parsed.apps : [],
+          devices: Array.isArray(parsed.devices) ? parsed.devices : [],
+          containers: Array.isArray(parsed.containers) ? parsed.containers : [],
+          gates: Array.isArray(parsed.gates) ? parsed.gates : [],
+          logs: Array.isArray(parsed.logs) ? parsed.logs : []
+        };
+      } catch (e) {
+        return getDefaultState();
+      }
+    }
+
+    function saveState(skipCloudPush) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(consoleState));
+      } catch (e) {
+        console.warn("localStorage save warning:", e);
+      }
+      renderApp();
+      if (!skipCloudPush && !fbRuntime.isRemoteApply) {
+        pushToFirestore();
+      }
+    }
+
+    function addAuditLog(action, detail) {
+      const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      consoleState.logs.unshift({
+        id: "log-" + Date.now(),
+        action,
+        detail,
+        time: now
+      });
+      if (consoleState.logs.length > 50) {
+        consoleState.logs = consoleState.logs.slice(0, 50);
+      }
+    }
+
+    function getSyncMeta() {
+      try {
+        return JSON.parse(localStorage.getItem(META_KEY)) || {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function setSyncMeta(patch) {
+      const next = Object.assign({}, getSyncMeta(), patch);
+      localStorage.setItem(META_KEY, JSON.stringify(next));
+    }
+
+    function getActiveFirebaseConfig() {
+      try {
+        const saved = localStorage.getItem(FB_CONFIG_KEY);
+        return saved ? JSON.parse(saved) : DEFAULT_FIREBASE_CONFIG;
+      } catch (e) {
+        return DEFAULT_FIREBASE_CONFIG;
+      }
+    }
+
+    function showToast(message) {
+      const el = document.getElementById("toast");
+      if (!el) return;
+      el.textContent = message;
+      el.classList.add("show");
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        el.classList.remove("show");
+      }, 3200);
+    }
+
+    function escapeHTML(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function copyText(text, label) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast("Copied " + label);
+        }).catch(() => fallbackCopy(text, label));
+      } else {
+        fallbackCopy(text, label);
+      }
+    }
+
+    function fallbackCopy(text, label) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast("Copied " + label);
+      } catch (e) {
+        showToast("Copy failed");
+      }
+      document.body.removeChild(ta);
+    }
+
+    /* =========================================================================
+       4. TAB, SEARCH, AND MAIN RENDERER
+       ========================================================================= */
+    function switchTab(tab) {
+      activeTab = tab;
+      ["apps", "devices", "icloud", "gates"].forEach(t => {
+        const btn = document.getElementById("tab-" + t);
+        if (btn) btn.classList.toggle("active", t === tab);
+      });
+      renderApp();
+    }
+
+    function setSearch(val) {
+      searchQuery = (val || "").trim().toLowerCase();
+      renderApp();
+    }
+
+    function setEnvFilter(val) {
+      envFilter = val || "ALL";
+      renderApp();
+    }
+
+    function matchesFilter(textFields, envVal) {
+      if (envFilter !== "ALL" && envVal && envVal !== envFilter) return false;
+      if (!searchQuery) return true;
+      return textFields.some(f => String(f || "").toLowerCase().includes(searchQuery));
+    }
+
+    function renderApp() {
+      const pendingGates = consoleState.gates.filter(g => g.status === "Pending");
+      document.getElementById("count-apps").textContent = consoleState.apps.length;
+      document.getElementById("count-devices").textContent = consoleState.devices.length;
+      document.getElementById("count-icloud").textContent = consoleState.containers.length;
+      document.getElementById("count-gates").textContent = pendingGates.length;
+
+      const main = document.getElementById("main-container");
+      if (!main) return;
+
+      let html = "";
+
+      if (pendingGates.length > 0 && activeTab !== "gates") {
+        html += `
+          <div class="banner banner-amber">
+            <div>
+              <strong>${pendingGates.length} Approval Gate${pendingGates.length > 1 ? "s" : ""} Pending</strong>
+              <div style="opacity:0.85;margin-top:2px;">Production &amp; schema changes require operator sign-off.</div>
+            </div>
+            <button class="btn btn-amber btn-sm" type="button" onclick="switchTab('gates')">Review</button>
+          </div>
+        `;
+      }
+
+      if (activeTab === "apps") {
+        html += renderAppsTab();
+      } else if (activeTab === "devices") {
+        html += renderDevicesTab();
+      } else if (activeTab === "icloud") {
+        html += renderICloudTab();
+      } else {
+        html += renderGatesTab();
+      }
+
+      main.innerHTML = html;
+    }
+
+    function envBadgeClass(env) {
+      if (env === "Production") return "badge-green";
+      if (env === "TestFlight") return "badge-amber";
+      return "badge-blue";
+    }
+
+    function renderAppsTab() {
+      const filtered = consoleState.apps.filter(a =>
+        matchesFilter([a.name, a.bundleId, a.teamId, (a.capabilities || []).join(" ")], a.env)
+      );
+
+      let out = `
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">App Identifiers &amp; Builds</h2>
+            <p class="section-sub">Bundle IDs, entitlements, and TestFlight readiness</p>
+          </div>
+          <button class="btn btn-primary btn-sm" type="button" onclick="openNewAppModal()">+ New App</button>
+        </div>
+      `;
+
+      if (filtered.length === 0) {
+        out += `<div class="card" style="text-align:center;color:var(--muted);padding:24px;">No apps match your current filter.</div>`;
+        return out;
+      }
+
+      const allCaps = ["Push Notifications", "Sign in with Apple", "iCloud CloudKit", "App Groups", "Associated Domains"];
+
+      filtered.forEach(app => {
+        const capChips = allCaps.map(cap => {
+          const on = (app.capabilities || []).includes(cap);
+          return `<button type="button" class="chip ${on ? "enabled" : ""}" onclick="toggleAppCap('${app.id}', '${escapeHTML(cap)}')">${on ? "✓ " : "+ "}${escapeHTML(cap)}</button>`;
+        }).join("");
+
+        out += `
+          <div class="card">
+            <div class="card-top">
+              <div>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                  <h3 class="card-title">${escapeHTML(app.name)}</h3>
+                  <span class="badge ${envBadgeClass(app.env)}">${escapeHTML(app.env)}</span>
+                </div>
+                <div class="card-meta mono">${escapeHTML(app.bundleId)} • v${escapeHTML(app.version)}</div>
+                <div class="card-meta">Team ID: <span class="mono">${escapeHTML(app.teamId)}</span></div>
+              </div>
+              <button class="btn btn-ghost btn-sm" type="button" onclick="copyText('${escapeHTML(app.bundleId)}', 'Bundle ID')">Copy ID</button>
+            </div>
+
+            <div class="chips">${capChips}</div>
+
+            <div class="divider"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <span class="badge ${app.testflightReady ? "badge-green" : "badge-amber"}">
+                ${app.testflightReady ? "✓ TestFlight Ready" : "Checklist Incomplete"}
+              </span>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-ghost btn-sm" type="button" onclick="cycleAppEnv('${app.id}')">Switch Env</button>
+                <button class="btn btn-red btn-sm" type="button" onclick="deleteItem('apps', '${app.id}', '${escapeHTML(app.name)}')">Remove</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      return out;
+    }
+
+    function renderDevicesTab() {
+      const filtered = consoleState.devices.filter(d =>
+        matchesFilter([d.name, d.platform, d.os, d.udid, d.profileStatus], "ALL")
+      );
+
+      let out = `
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Registered Apple Devices</h2>
+            <p class="section-sub">UDID inventory &amp; provisioning profile status</p>
+          </div>
+          <button class="btn btn-primary btn-sm" type="button" onclick="openNewDeviceModal()">+ Register Device</button>
+        </div>
+      `;
+
+      if (filtered.length === 0) {
+        out += `<div class="card" style="text-align:center;color:var(--muted);padding:24px;">No devices match your search.</div>`;
+        return out;
+      }
+
+      filtered.forEach(dev => {
+        out += `
+          <div class="card">
+            <div class="card-top">
+              <div>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                  <h3 class="card-title">${escapeHTML(dev.name)}</h3>
+                  <span class="badge badge-blue">${escapeHTML(dev.platform)} • ${escapeHTML(dev.os)}</span>
+                </div>
+                <div class="card-meta mono" style="margin-top:6px;">UDID: ${escapeHTML(dev.udid)}</div>
+                <div style="margin-top:6px;">
+                  <span class="badge badge-green">${escapeHTML(dev.profileStatus)}</span>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <button class="btn btn-ghost btn-sm" type="button" onclick="copyText('${escapeHTML(dev.udid)}', 'UDID')">Copy UDID</button>
+                <button class="btn btn-red btn-sm" type="button" onclick="deleteItem('devices', '${dev.id}', '${escapeHTML(dev.name)}')">Remove</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      return out;
+    }
+
+    function renderICloudTab() {
+      const filtered = consoleState.containers.filter(c =>
+        matchesFilter([c.identifier, c.schemaStatus, (c.recordTypes || []).join(" ")], c.env)
+      );
+
+      let out = `
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">iCloud &amp; CloudKit Containers</h2>
+            <p class="section-sub">Schema promotion gates &amp; iCloud Drive snapshots</p>
+          </div>
+          <button class="btn btn-primary btn-sm" type="button" onclick="openNewContainerModal()">+ Container</button>
+        </div>
+
+        <div class="card">
+          <div class="card-top">
+            <div>
+              <h3 class="card-title">iCloud Drive State Snapshot</h3>
+              <p class="card-meta">Save or restore your OpsHubOG JSON archive directly via the iOS Files app / iCloud Drive.</p>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+            <button class="btn btn-green btn-sm" type="button" onclick="exportStateJSON()">Save Snapshot to iCloud Drive</button>
+            <label class="btn btn-ghost btn-sm" style="margin:0;">
+              Restore from iCloud Drive
+              <input type="file" accept=".json,application/json" style="display:none;" onchange="importStateJSON(event)" />
+            </label>
+          </div>
+        </div>
+      `;
+
+      filtered.forEach(c => {
+        const records = (c.recordTypes || []).map(r => `<span class="chip enabled mono">${escapeHTML(r)}</span>`).join("");
+        out += `
+          <div class="card">
+            <div class="card-top">
+              <div>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                  <h3 class="card-title mono" style="font-size:13px;">${escapeHTML(c.identifier)}</h3>
+                  <span class="badge ${envBadgeClass(c.env)}">${escapeHTML(c.env)}</span>
+                </div>
+                <div class="card-meta" style="margin-top:4px;">Status: ${escapeHTML(c.schemaStatus)} • ${escapeHTML(c.lastSync)}</div>
+              </div>
+            </div>
+            <div class="chips">${records}</div>
+            <div class="divider"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-amber btn-sm" type="button" onclick="requestSchemaPromotion('${c.id}')">Queue Prod Promotion Gate</button>
+              <button class="btn btn-red btn-sm" type="button" onclick="deleteItem('containers', '${c.id}', '${escapeHTML(c.identifier)}')">Remove</button>
+            </div>
+          </div>
+        `;
+      });
+
+      return out;
+    }
+
+    function renderGatesTab() {
+      let out = `
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Approval Gates &amp; Audit Log</h2>
+            <p class="section-sub">Human-in-the-loop sign-off &amp; full state portability</p>
+          </div>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="exportStateJSON()">Export JSON</button>
+        </div>
+      `;
+
+      if (consoleState.gates.length === 0) {
+        out += `<div class="card" style="color:var(--muted);font-size:13px;">No approval gates in queue.</div>`;
+      } else {
+        consoleState.gates.forEach(gate => {
+          const isPending = gate.status === "Pending";
+          out += `
+            <div class="card">
+              <div class="card-top">
+                <div>
+                  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                    <span class="badge ${isPending ? "badge-amber" : (gate.status === "Approved" ? "badge-green" : "badge-red")}">${escapeHTML(gate.status)}</span>
+                    <span class="badge badge-purple">${escapeHTML(gate.scope)}</span>
+                  </div>
+                  <h3 class="card-title" style="margin-top:6px;">${escapeHTML(gate.title)}</h3>
+                  <div class="card-meta">Requested: ${escapeHTML(gate.requestedAt)} • Risk: ${escapeHTML(gate.risk)}</div>
+                </div>
+              </div>
+              ${isPending ? `
+                <div style="display:flex;gap:8px;margin-top:12px;">
+                  <button class="btn btn-green btn-sm" type="button" onclick="resolveGate('${gate.id}', 'Approved')">Approve &amp; Execute</button>
+                  <button class="btn btn-red btn-sm" type="button" onclick="resolveGate('${gate.id}', 'Rejected')">Reject</button>
+                </div>
+              ` : ""}
+            </div>
+          `;
+        });
+      }
+
+      out += `<h3 class="section-title" style="margin-top:8px;">Recent Operator Audit Log</h3>`;
+      consoleState.logs.forEach(log => {
+        out += `
+          <div class="card" style="padding:11px 14px;">
+            <div style="display:flex;justify-content:space-between;gap:8px;">
+              <strong style="font-size:13px;">${escapeHTML(log.action)}</strong>
+              <span style="font-size:11px;color:var(--muted);flex-shrink:0;">${escapeHTML(log.time)}</span>
+            </div>
+            <div class="card-meta">${escapeHTML(log.detail)}</div>
+          </div>
+        `;
+      });
+
+      return out;
+    }
+
+    /* =========================================================================
+       5. CONSOLE MUTATIONS & MODALS
+       ========================================================================= */
+    function toggleAppCap(appId, cap) {
+      const app = consoleState.apps.find(a => a.id === appId);
+      if (!app) return;
+      app.capabilities = app.capabilities || [];
+      if (app.capabilities.includes(cap)) {
+        app.capabilities = app.capabilities.filter(c => c !== cap);
+      } else {
+        app.capabilities.push(cap);
+      }
+      addAuditLog("Updated App Capability", `${app.bundleId}: toggled ${cap}`);
+      saveState();
+    }
+
+    function cycleAppEnv(appId) {
+      const app = consoleState.apps.find(a => a.id === appId);
+      if (!app) return;
+      const order = ["Development", "TestFlight", "Production"];
+      const next = order[(order.indexOf(app.env) + 1) % order.length];
+      if (next === "Production") {
+        consoleState.gates.unshift({
+          id: "gate-" + Date.now(),
+          title: `Promote ${app.name} (${app.bundleId}) to Production`,
+          scope: "App Store / Release",
+          risk: "High",
+          status: "Pending",
+          requestedAt: "Just now",
+          targetAppId: app.id
+        });
+        addAuditLog("Queued Production Gate", `${app.bundleId} awaiting operator sign-off`);
+        showToast("Queued Production approval gate");
+      } else {
+        app.env = next;
+        addAuditLog("Changed App Environment", `${app.bundleId} → ${next}`);
+        showToast("Switched to " + next);
+      }
+      saveState();
+    }
+
+    function requestSchemaPromotion(containerId) {
+      const c = consoleState.containers.find(x => x.id === containerId);
+      if (!c) return;
+      consoleState.gates.unshift({
+        id: "gate-" + Date.now(),
+        title: `Promote CloudKit Schema: ${c.identifier} → Production`,
+        scope: "iCloud / CloudKit",
+        risk: "High",
+        status: "Pending",
+        requestedAt: "Just now",
+        targetContainerId: c.id
+      });
+      addAuditLog("Queued CloudKit Schema Gate", c.identifier);
+      saveState();
+      showToast("Schema promotion gate created");
+    }
+
+    function resolveGate(gateId, decision) {
+      const gate = consoleState.gates.find(g => g.id === gateId);
+      if (!gate) return;
+      gate.status = decision;
+      if (decision === "Approved") {
+        if (gate.targetAppId) {
+          const app = consoleState.apps.find(a => a.id === gate.targetAppId);
+          if (app) app.env = "Production";
+        }
+        if (gate.targetContainerId) {
+          const c = consoleState.containers.find(x => x.id === gate.targetContainerId);
+          if (c) {
+            c.env = "Production";
+            c.schemaStatus = "Deployed to Production";
+            c.lastSync = "Promoted just now";
+          }
+        }
+      }
+      addAuditLog(`Gate ${decision}`, gate.title);
+      saveState();
+      showToast(`Gate ${decision}`);
+    }
+
+    function deleteItem(collectionName, id, label) {
+      consoleState[collectionName] = (consoleState[collectionName] || []).filter(x => x.id !== id);
+      addAuditLog("Removed Item", `${collectionName}: ${label}`);
+      saveState();
+      showToast("Removed " + label);
+    }
+
+    function openModal(innerHTML) {
+      const backdrop = document.getElementById("modal-backdrop");
+      const sheet = document.getElementById("modal-sheet");
+      if (!backdrop || !sheet) return;
+      sheet.innerHTML = innerHTML;
+      backdrop.classList.add("open");
+    }
+
+    function closeModal() {
+      const backdrop = document.getElementById("modal-backdrop");
+      if (backdrop) backdrop.classList.remove("open");
+    }
+
+    function openNewAppModal() {
+      openModal(`
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 class="section-title">Register New App ID</h3>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="closeModal()">Close</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">App Name</label>
+          <input id="new-app-name" class="input form-input" placeholder="e.g., OpsHubOG Companion" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bundle Identifier</label>
+          <input id="new-app-bundle" class="input form-input mono" placeholder="com.opshubog.companion" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Environment</label>
+          <select id="new-app-env" class="select form-input">
+            <option value="Development">Development</option>
+            <option value="TestFlight">TestFlight</option>
+            <option value="Production">Production</option>
+          </select>
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-primary btn-full" type="button" onclick="submitNewApp()">Create App Record</button>
+        </div>
+      `);
+    }
+
+    function submitNewApp() {
+      const name = document.getElementById("new-app-name").value.trim();
+      const bundleId = document.getElementById("new-app-bundle").value.trim();
+      const env = document.getElementById("new-app-env").value;
+      if (!name || !bundleId) {
+        showToast("Enter both App Name and Bundle ID");
         return;
       }
-      try {
-        const provider = new GithubAuthProvider();
-        provider.addScope('gist');
-        const result = window.fbRuntime.user
-          ? await linkWithPopup(window.fbRuntime.user, provider)
-          : await signInWithPopup(window.fbRuntime.auth, provider);
-        const credential = GithubAuthProvider.credentialFromResult(result);
-        const meta = getEcosystemMeta();
-        if (credential && credential.accessToken) {
-          window.fbRuntime.githubAccessToken = credential.accessToken;
-        }
-        const ghProfile = result._tokenResponse || {};
-        if (ghProfile.screenName) meta.githubUsername = ghProfile.screenName;
-        saveEcosystemMeta(meta);
-        window.logConsoleAudit('Linked GitHub Account', `Connected GitHub (${meta.githubUsername || 'OAuth'}) with Gist sync scope`);
-        window.showToast('GitHub account connected!', 'success');
-        window.openCloudSyncModal();
-      } catch (err) {
-        if (err.code === 'auth/credential-already-in-use') {
-          window.showToast('GitHub account already linked—signing in directly.', 'info');
-          const provider = new GithubAuthProvider();
-          provider.addScope('gist');
-          const res = await signInWithPopup(window.fbRuntime.auth, provider);
-          const cred = GithubAuthProvider.credentialFromResult(res);
-          if (cred && cred.accessToken) window.fbRuntime.githubAccessToken = cred.accessToken;
-          window.openCloudSyncModal();
-        } else {
-          window.showToast('GitHub Sign-In failed: ' + err.message, 'error');
-        }
-      }
-    };
+      consoleState.apps.unshift({
+        id: "app-" + Date.now(),
+        name,
+        bundleId,
+        version: "1.0.0 (1)",
+        env,
+        teamId: "9X4K2L8M1P",
+        capabilities: ["Push Notifications", "Sign in with Apple"],
+        testflightReady: env !== "Development"
+      });
+      addAuditLog("Created App ID", `${name} (${bundleId})`);
+      closeModal();
+      saveState();
+      showToast("Added " + name);
+    }
 
-    window.syncSnapshotToGithubGist = async function() {
-      if (!window.fbRuntime.githubAccessToken) {
-        window.showToast('Authenticating with GitHub for Gist write access...', 'info');
-        await window.signInWithGithubSync();
-        if (!window.fbRuntime.githubAccessToken) return;
+    function openNewDeviceModal() {
+      openModal(`
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 class="section-title">Register Apple Device</h3>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="closeModal()">Close</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Device Name</label>
+          <input id="new-dev-name" class="input form-input" placeholder="e.g., Test iPhone 15" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Platform</label>
+          <select id="new-dev-platform" class="select form-input">
+            <option value="iPhone">iPhone</option>
+            <option value="iPad">iPad</option>
+            <option value="Mac">Mac</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">OS Version</label>
+          <input id="new-dev-os" class="input form-input" value="iOS 18.4" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">UDID</label>
+          <input id="new-dev-udid" class="input form-input mono" placeholder="00008140-001A48922E80001C" />
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-primary btn-full" type="button" onclick="submitNewDevice()">Save Device</button>
+        </div>
+      `);
+    }
+
+    function submitNewDevice() {
+      const name = document.getElementById("new-dev-name").value.trim();
+      const platform = document.getElementById("new-dev-platform").value;
+      const os = document.getElementById("new-dev-os").value.trim() || "iOS 18.4";
+      const udid = document.getElementById("new-dev-udid").value.trim();
+      if (!name || !udid) {
+        showToast("Enter Device Name and UDID");
+        return;
       }
+      consoleState.devices.unshift({
+        id: "dev-" + Date.now(),
+        name,
+        platform,
+        os,
+        udid,
+        profileStatus: "Active (Dev)"
+      });
+      addAuditLog("Registered Device", `${name} (${platform})`);
+      closeModal();
+      saveState();
+      showToast("Registered " + name);
+    }
+
+    function openNewContainerModal() {
+      openModal(`
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 class="section-title">Add CloudKit Container</h3>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="closeModal()">Close</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Container Identifier</label>
+          <input id="new-ck-id" class="input form-input mono" placeholder="iCloud.com.opshubog.notes" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Record Types (comma-separated)</label>
+          <input id="new-ck-records" class="input form-input mono" placeholder="NoteItem, SyncCursor" />
+        </div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-primary btn-full" type="button" onclick="submitNewContainer()">Add Container</button>
+        </div>
+      `);
+    }
+
+    function submitNewContainer() {
+      const identifier = document.getElementById("new-ck-id").value.trim();
+      const recordsRaw = document.getElementById("new-ck-records").value.trim();
+      if (!identifier) {
+        showToast("Enter a CloudKit container identifier");
+        return;
+      }
+      const recordTypes = recordsRaw
+        ? recordsRaw.split(",").map(s => s.trim()).filter(Boolean)
+        : ["DefaultRecord"];
+      consoleState.containers.unshift({
+        id: "ck-" + Date.now(),
+        identifier,
+        env: "Development",
+        recordTypes,
+        schemaStatus: "Development Schema Ready",
+        lastSync: "Created just now"
+      });
+      addAuditLog("Added CloudKit Container", identifier);
+      closeModal();
+      saveState();
+      showToast("Added " + identifier);
+    }
+
+    function confirmResetSeedData() {
+      openModal(`
+        <h3 class="section-title">Reset Console Seed Data?</h3>
+        <p class="section-sub" style="margin-top:6px;">This restores the default sample apps, devices, and CloudKit containers in localStorage (and syncs if signed in).</p>
+        <div style="display:flex;gap:8px;margin-top:16px;">
+          <button class="btn btn-red btn-full" type="button" onclick="executeResetSeedData()">Reset Now</button>
+          <button class="btn btn-ghost btn-full" type="button" onclick="closeModal()">Cancel</button>
+        </div>
+      `);
+    }
+
+    function executeResetSeedData() {
+      consoleState = getDefaultState();
+      addAuditLog("Reset Console Data", "Restored default seed state");
+      closeModal();
+      saveState();
+      showToast("Console reset to default seed data");
+    }
+
+    /* =========================================================================
+       6. JSON EXPORT / IMPORT (iCloud Drive & Google Drive Snapshot)
+       ========================================================================= */
+    function exportStateJSON() {
       try {
-        const meta = getEcosystemMeta();
+        const blob = new Blob([JSON.stringify(consoleState, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "opshubog-backup.json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setSyncMeta({ lastICloudExport: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) });
+        addAuditLog("Exported State Snapshot", "Downloaded opshubog-backup.json");
+        saveState(true);
+        showToast("Saved opshubog-backup.json — choose iCloud Drive in Files!");
+      } catch (e) {
+        showToast("Export failed: " + e.message);
+      }
+    }
+
+    function importStateJSON(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!parsed || !Array.isArray(parsed.apps)) {
+            throw new Error("Invalid OpsHubOG backup file");
+          }
+          consoleState = {
+            apps: parsed.apps || [],
+            devices: parsed.devices || [],
+            containers: parsed.containers || [],
+            gates: parsed.gates || [],
+            logs: parsed.logs || []
+          };
+          addAuditLog("Restored State Snapshot", "Imported from " + file.name);
+          saveState();
+          closeModal();
+          showToast("Snapshot restored!");
+        } catch (err) {
+          showToast("Import error: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    /* =========================================================================
+       7. FIREBASE COMPAT AUTH + FIRESTORE MULTI-ECOSYSTEM SYNC
+       ========================================================================= */
+    function updateSyncPill(state, text) {
+      const dot = document.getElementById("sync-dot");
+      const label = document.getElementById("sync-pill-text");
+      const badge = document.getElementById("mode-badge");
+      if (dot) {
+        dot.className = "sync-dot" + (state === "synced" ? " synced" : state === "syncing" ? " syncing" : state === "error" ? " error" : "");
+      }
+      if (label) label.textContent = text;
+      if (badge) {
+        if (state === "synced") {
+          badge.className = "badge badge-green";
+          badge.textContent = "CLOUD SYNCED";
+        } else {
+          badge.className = "badge badge-amber";
+          badge.textContent = "LOCAL";
+        }
+      }
+    }
+
+    function initFirebaseSafely() {
+      try {
+        if (typeof window.firebase === "undefined") {
+          updateSyncPill("local", "Local Only");
+          return;
+        }
+        const cfg = getActiveFirebaseConfig();
+        if (!cfg || !cfg.apiKey || !cfg.projectId) {
+          updateSyncPill("local", "Local Only");
+          return;
+        }
+        if (!firebase.apps.length) {
+          firebase.initializeApp(cfg);
+        }
+        fbRuntime.initialized = true;
+
+        // Handle redirect result (essential for iOS Safari standalone Home Screen PWA)
+        firebase.auth().getRedirectResult().then(res => {
+          if (res && res.user) {
+            showToast("Signed in as " + (res.user.email || "Operator"));
+          }
+        }).catch(err => {
+          console.warn("Redirect sign-in note:", err.message);
+        });
+
+        firebase.auth().onAuthStateChanged(user => {
+          fbRuntime.user = user;
+          if (user) {
+            const shortName = user.email ? user.email.split("@")[0] : "Synced";
+            updateSyncPill("syncing", "Connecting...");
+            subscribeToFirestore(user, shortName);
+          } else {
+            if (fbRuntime.unsubscribe) {
+              fbRuntime.unsubscribe();
+              fbRuntime.unsubscribe = null;
+            }
+            updateSyncPill("local", "Local Only");
+          }
+          if (document.getElementById("cloud-sync-drawer")) {
+            openCloudSyncModal();
+          }
+        });
+      } catch (err) {
+        console.warn("Firebase non-blocking fallback:", err);
+        updateSyncPill("local", "Local Only");
+      }
+    }
+
+    function subscribeToFirestore(user, shortName) {
+      try {
+        const db = firebase.firestore();
+        const docRef = db.collection("opshubog_users").doc(user.uid);
+        if (fbRuntime.unsubscribe) fbRuntime.unsubscribe();
+
+        fbRuntime.unsubscribe = docRef.onSnapshot(
+          snap => {
+            updateSyncPill("synced", shortName + " • Synced");
+            if (snap.exists && !snap.metadata.hasPendingWrites) {
+              const data = snap.data();
+              if (data && data.consoleState && Array.isArray(data.consoleState.apps)) {
+                fbRuntime.isRemoteApply = true;
+                consoleState = data.consoleState;
+                saveState(true);
+                fbRuntime.isRemoteApply = false;
+              }
+            } else if (!snap.exists) {
+              pushToFirestore();
+            }
+          },
+          err => {
+            console.warn("Firestore listener error:", err.message);
+            updateSyncPill("error", "Sync Rule/Net Err");
+          }
+        );
+      } catch (e) {
+        updateSyncPill("error", "Firestore Error");
+      }
+    }
+
+    function pushToFirestore() {
+      try {
+        if (!fbRuntime.initialized || !fbRuntime.user) return;
+        const db = firebase.firestore();
+        db.collection("opshubog_users").doc(fbRuntime.user.uid).set(
+          {
+            consoleState,
+            updatedAt: new Date().toISOString(),
+            operatorEmail: fbRuntime.user.email || ""
+          },
+          { merge: true }
+        ).catch(err => console.warn("Firestore write warning:", err.message));
+      } catch (e) {
+        console.warn("Firestore push skipped:", e);
+      }
+    }
+
+    function signInWithProvider(providerType) {
+      if (!fbRuntime.initialized) {
+        showToast("Firebase SDK offline — using Local Mode");
+        return;
+      }
+      let provider;
+      if (providerType === "google") {
+        provider = new firebase.auth.GoogleAuthProvider();
+      } else if (providerType === "apple") {
+        provider = new firebase.auth.OAuthProvider("apple.com");
+        provider.addScope("email");
+        provider.addScope("name");
+      } else if (providerType === "github") {
+        provider = new firebase.auth.GithubAuthProvider();
+        provider.addScope("gist");
+      }
+
+      const isStandalonePWA = window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+      if (isStandalonePWA) {
+        firebase.auth().signInWithRedirect(provider).catch(err => showToast("Auth error: " + err.message));
+        return;
+      }
+
+      firebase.auth().signInWithPopup(provider).catch(err => {
+        if (err && (err.code === "auth/popup-blocked" || err.code === "auth/operation-not-supported-in-this-environment")) {
+          firebase.auth().signInWithRedirect(provider).catch(e2 => showToast("Auth error: " + e2.message));
+        } else {
+          showToast("Sign-In: " + err.message);
+        }
+      });
+    }
+
+    function signOutFirebase() {
+      if (!fbRuntime.initialized) return;
+      firebase.auth().signOut().then(() => {
+        showToast("Signed out — local copy retained");
+      });
+    }
+
+    async function syncToGithubGist() {
+      const meta = getSyncMeta();
+      const patInput = document.getElementById("github-pat-input");
+      const token = (patInput && patInput.value.trim()) || meta.githubPat || "";
+      if (!token) {
+        showToast("Enter a GitHub Personal Access Token (gist scope) below");
+        return;
+      }
+      setSyncMeta({ githubPat: token });
+      try {
         const body = {
-          description: 'OpsHubOG Apple Device & App Console — Encrypted/Private State Snapshot',
+          description: "OpsHubOG Console State Snapshot",
           public: false,
           files: {
-            'opshubog-console-state.json': {
-              content: JSON.stringify(window.getExportableState(), null, 2)
+            "opshubog-console-state.json": {
+              content: JSON.stringify(consoleState, null, 2)
             }
           }
         };
         const url = meta.githubGistId
-          ? `https://api.github.com/gists/${meta.githubGistId}`
-          : 'https://api.github.com/gists';
-        const method = meta.githubGistId ? 'PATCH' : 'POST';
-
+          ? "https://api.github.com/gists/" + meta.githubGistId
+          : "https://api.github.com/gists";
+        const method = meta.githubGistId ? "PATCH" : "POST";
         const res = await fetch(url, {
           method,
           headers: {
-            'Authorization': 'Bearer ' + window.fbRuntime.githubAccessToken,
-            'Accept': 'application/vnd.github+json',
-            'Content-Type': 'application/json'
+            "Authorization": "Bearer " + token,
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
           },
           body: JSON.stringify(body)
         });
-        if (!res.ok) throw new Error(`GitHub Gist API (${res.status})`);
+        if (!res.ok) throw new Error("GitHub API " + res.status);
         const data = await res.json();
-        meta.githubGistId = data.id;
-        meta.lastGithubSync = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        saveEcosystemMeta(meta);
-        window.logConsoleAudit('Synced Snapshot to Private GitHub Gist', `Gist ID: ${data.id.slice(0, 10)}...`);
-        window.showToast('Synced state to Private GitHub Gist!', 'success');
-        window.openCloudSyncModal();
+        setSyncMeta({
+          githubGistId: data.id,
+          lastGithubSync: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        });
+        addAuditLog("Synced to Private GitHub Gist", "Gist ID: " + data.id.slice(0, 10) + "...");
+        saveState(true);
+        showToast("Synced to Private GitHub Gist!");
+        openCloudSyncModal();
       } catch (err) {
-        window.showToast('GitHub Gist sync failed: ' + err.message, 'error');
+        showToast("GitHub Gist sync failed: " + err.message);
       }
-    };
+    }
 
-    // 3. Sign in with Apple
-    window.signInWithAppleSync = async function() {
-      if (!window.fbRuntime.auth) {
-        window.showToast('Save your Firebase Web Config first.', 'warning');
-        return;
-      }
-      try {
-        const provider = new OAuthProvider('apple.com');
-        provider.addScope('email');
-        provider.addScope('name');
-        await signInWithPopup(window.fbRuntime.auth, provider);
-        window.showToast('Signed in with Apple!', 'success');
-      } catch (err) {
-        window.showToast('Apple Sign-In failed: ' + err.message, 'error');
-      }
-    };
-
-    // 4. iCloud Drive File Export & Import (iOS Files / macOS iCloud Drive)
-    window.exportToICloudDrive = function() {
-      const meta = getEcosystemMeta();
-      meta.lastICloudExport = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      saveEcosystemMeta(meta);
-      window.exportBackupJSON();
-      window.logConsoleAudit('Exported iCloud Drive Snapshot', 'Saved JSON archive for iOS Files / iCloud Drive sync');
-      window.showToast('In iOS Share/Downloads, save to iCloud Drive > OpsHubOG.', 'info');
-      window.openCloudSyncModal();
-    };
-
-    window.importSnapshotFile = function(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (!parsed || !parsed.projects) throw new Error('Invalid OpsHubOG snapshot format');
-          window.applyRemoteState(parsed);
-          window.pushStateToFirestore();
-          window.logConsoleAudit('Imported State Snapshot', `Restored console state from ${file.name}`);
-          window.showToast('Snapshot restored & synced across devices!', 'success');
-          window.closeModal();
-        } catch (err) {
-          window.showToast('Import failed: ' + err.message, 'error');
-        }
-      };
-      reader.readAsText(file);
-    };
-
-    window.signOutCloudSync = async function() {
-      if (window.fbRuntime.auth) {
-        await signOut(window.fbRuntime.auth);
-        window.fbRuntime.googleAccessToken = null;
-        window.fbRuntime.githubAccessToken = null;
-        window.showToast('Signed out of cloud sync (local copy retained).', 'info');
-      }
-    };
-
-    window.saveFirebaseConfigFromUI = function() {
-      const raw = document.getElementById('fb-config-input').value.trim();
+    function saveCustomFirebaseConfig() {
+      const raw = document.getElementById("custom-fb-config").value.trim();
       if (!raw) {
         localStorage.removeItem(FB_CONFIG_KEY);
-        window.showToast('Cleared Firebase config.', 'info');
-        window.openCloudSyncModal();
+        showToast("Restored default opshubog config");
         return;
       }
       try {
-        let jsonStr = raw;
-        const braceStart = raw.indexOf('{');
-        const braceEnd = raw.lastIndexOf('}');
-        if (braceStart !== -1 && braceEnd !== -1) {
-          jsonStr = raw.slice(braceStart, braceEnd + 1);
-        }
-        jsonStr = jsonStr.replace(/([{,]\s*)([a-zA-Z0-9_]+)\s*:/g, '$1"$2":').replace(/'/g, '"');
-        const parsed = JSON.parse(jsonStr);
-        if (!parsed.apiKey || !parsed.projectId) {
-          throw new Error('Missing apiKey or projectId');
-        }
+        const parsed = JSON.parse(raw);
+        if (!parsed.apiKey || !parsed.projectId) throw new Error("Missing apiKey or projectId");
         localStorage.setItem(FB_CONFIG_KEY, JSON.stringify(parsed));
-        window.showToast('Firebase config saved!', 'success');
-        window.initFirebaseSync(parsed);
-        window.openCloudSyncModal();
-      } catch (err) {
-        window.showToast('Invalid config format. Paste the firebaseConfig { ... } object.', 'error');
+        showToast("Saved config — reload to re-init");
+      } catch (e) {
+        showToast("Invalid JSON config: " + e.message);
       }
-    };
+    }
 
-    window.openCloudSyncModal = function() {
-      const savedCfg = getSavedFirebaseConfig();
-      const user = window.fbRuntime.user;
-      const meta = getEcosystemMeta();
-      const linkedProviders = user ? (user.providerData || []).map(p => p.providerId) : [];
+    function openCloudSyncModal() {
+      const user = fbRuntime.user;
+      const meta = getSyncMeta();
+      const cfg = getActiveFirebaseConfig();
 
-      const html = `
-        <div id="cloud-sync-modal-body" class="space-y-4">
-          <div class="flex items-center justify-between border-b border-ios-borderLight dark:border-ios-borderDark pb-3">
-            <div class="flex items-center gap-2.5">
-              <div class="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <h3 class="font-bold text-base">Unified Multi-Ecosystem Sync</h3>
-                <p class="text-xs text-zinc-500 dark:text-zinc-400">Google Services • GitHub Account • iCloud Drive</p>
-              </div>
+      openModal(`
+        <div id="cloud-sync-drawer">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <h3 class="section-title">Multi-Ecosystem Cloud Sync</h3>
+              <p class="section-sub">Google Firestore • Apple • GitHub Gist • iCloud Drive</p>
             </div>
-            <button onclick="closeModal()" class="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-ios-elevatedDark">
-              <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
+            <button class="btn btn-ghost btn-sm" type="button" onclick="closeModal()">Close</button>
           </div>
 
+          <div class="divider"></div>
+
           ${user ? `
-            <div class="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between gap-2">
-              <div class="min-w-0">
-                <p class="text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Live Firestore Sync Active
-                </p>
-                <p class="text-xs text-zinc-600 dark:text-zinc-300 truncate mt-0.5">${user.email || user.displayName || user.uid}</p>
+            <div class="banner banner-blue" style="margin-bottom:12px;">
+              <div style="min-width:0;">
+                <strong>✓ Cloud Firestore Live Sync Active</strong>
+                <div class="card-meta" style="color:inherit;">${escapeHTML(user.email || user.uid)}</div>
               </div>
-              <button onclick="signOutCloudSync()" class="px-3 py-1.5 rounded-xl bg-white dark:bg-ios-elevatedDark border border-ios-borderLight dark:border-ios-borderDark text-xs font-semibold hover:bg-zinc-100 transition shrink-0">
-                Sign Out
-              </button>
+              <button class="btn btn-ghost btn-sm" type="button" onclick="signOutFirebase()">Sign Out</button>
             </div>
           ` : `
-            <div class="p-3.5 rounded-2xl bg-zinc-100 dark:bg-ios-elevatedDark space-y-2.5">
-              <p class="text-xs text-zinc-600 dark:text-zinc-300">Sign in to activate live cross-device sync across Google, GitHub, and your Apple devices:</p>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <button onclick="signInWithGoogleSync()" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition">
-                  <i data-lucide="chrome" class="w-4 h-4"></i> Google
-                </button>
-                <button onclick="signInWithGithubSync()" class="py-2.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-900 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition">
-                  <i data-lucide="github" class="w-4 h-4"></i> GitHub
-                </button>
-                <button onclick="signInWithAppleSync()" class="py-2.5 px-3 rounded-xl bg-zinc-950 dark:bg-white text-white dark:text-zinc-950 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition">
-                  <i data-lucide="apple" class="w-4 h-4"></i> Apple
-                </button>
+            <div class="card" style="margin-bottom:12px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Sign In for Real-Time Cross-Device Sync</div>
+              <div style="display:grid;grid-template-columns:1fr;gap:8px;">
+                <button class="btn btn-primary btn-full" type="button" onclick="signInWithProvider('google')">Continue with Google (Firestore)</button>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                  <button class="btn btn-ghost btn-full" type="button" onclick="signInWithProvider('apple')">Sign in with Apple</button>
+                  <button class="btn btn-ghost btn-full" type="button" onclick="signInWithProvider('github')">Sign in with GitHub</button>
+                </div>
               </div>
             </div>
           `}
 
-          <!-- Ecosystem Bridges -->
-          <div class="space-y-2.5">
-            <p class="text-[11px] font-bold uppercase tracking-wider text-zinc-500">Connected Ecosystem Bridges</p>
-
-            <!-- 1. Google Services (Firestore + Google Drive) -->
-            <div class="p-3 rounded-2xl border border-ios-borderLight dark:border-ios-borderDark bg-white dark:bg-ios-cardDark flex items-center justify-between gap-2">
-              <div class="min-w-0">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold">Google Services</span>
-                  <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-500/15 text-blue-600 dark:text-blue-400">Firestore + Drive</span>
-                </div>
-                <p class="text-[11px] text-zinc-500 mt-0.5">
-                  ${meta.lastGoogleDriveSync ? `Last Drive snapshot: ${meta.lastGoogleDriveSync}` : 'Real-time DB active; push JSON backup to Google Drive'}
-                </p>
+          <div class="card" style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <div>
+                <div style="font-size:13px;font-weight:700;">iCloud Drive Snapshot</div>
+                <div class="card-meta">${meta.lastICloudExport ? "Last saved: " + escapeHTML(meta.lastICloudExport) : "Export/Import JSON via iOS Files app"}</div>
               </div>
-              <button onclick="syncSnapshotToGoogleDrive()" class="px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 text-xs font-semibold shrink-0 transition">
-                Sync Drive
-              </button>
-            </div>
-
-            <!-- 2. GitHub Account (OAuth + Private Gist) -->
-            <div class="p-3 rounded-2xl border border-ios-borderLight dark:border-ios-borderDark bg-white dark:bg-ios-cardDark flex items-center justify-between gap-2">
-              <div class="min-w-0">
-                <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold">GitHub Account</span>
-                  <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-purple-500/15 text-purple-600 dark:text-purple-400">Private Gist</span>
-                </div>
-                <p class="text-[11px] text-zinc-500 mt-0.5">
-                  ${meta.githubUsername ? `@${meta.githubUsername}` : (linkedProviders.includes('github.com') ? 'Linked' : 'Not linked')}
-                  ${meta.lastGithubSync ? ` • Synced ${meta.lastGithubSync}` : ' • Push state to private Gist'}
-                </p>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-green btn-sm" type="button" onclick="exportStateJSON()">Save</button>
+                <label class="btn btn-ghost btn-sm" style="margin:0;">
+                  Load
+                  <input type="file" accept=".json,application/json" style="display:none;" onchange="importStateJSON(event)" />
+                </label>
               </div>
-              <button onclick="syncSnapshotToGithubGist()" class="px-3 py-1.5 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 text-xs font-semibold shrink-0 transition">
-                ${linkedProviders.includes('github.com') ? 'Sync Gist' : 'Link & Sync'}
-              </button>
-            </div>
-
-            <!-- 3. Apple iCloud Drive & CloudKit Boundary -->
-            <div class="p-3 rounded-2xl border border-ios-borderLight dark:border-ios-borderDark bg-white dark:bg-ios-cardDark space-y-2">
-              <div class="flex items-center justify-between gap-2">
-                <div class="min-w-0">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-xs font-bold">Apple iCloud & Files</span>
-                    <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">User-Scoped</span>
-                  </div>
-                  <p class="text-[11px] text-zinc-500 mt-0.5">
-                    ${meta.lastICloudExport ? `Last exported: ${meta.lastICloudExport}` : 'Save/load JSON snapshot via iCloud Drive (Files app)'}
-                  </p>
-                </div>
-                <div class="flex items-center gap-1.5 shrink-0">
-                  <button onclick="exportToICloudDrive()" class="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold transition">
-                    Save
-                  </button>
-                  <label class="px-2.5 py-1.5 rounded-xl bg-zinc-100 dark:bg-ios-elevatedDark hover:bg-zinc-200 text-xs font-semibold cursor-pointer transition">
-                    Load
-                    <input type="file" accept=".json,application/json" onchange="importSnapshotFile(event)" class="hidden" />
-                  </label>
-                </div>
-              </div>
-              <p class="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Web PWAs cannot access private CloudKit containers directly without a native Swift wrapper; use iCloud Drive JSON snapshots or CloudKit Dashboard in the <strong>iCloud</strong> tab.
-              </p>
             </div>
           </div>
 
-          <details class="rounded-2xl border border-ios-borderLight dark:border-ios-borderDark p-3">
-            <summary class="text-xs font-semibold cursor-pointer select-none">Advanced: Firebase Web Config (Pre-configured for opshubog)</summary>
-            <div class="mt-2.5 space-y-2">
-              <textarea id="fb-config-input" rows="4" placeholder='{"apiKey": "...", "authDomain": "...", "projectId": "..."}' class="w-full p-2.5 rounded-xl font-mono text-[11px] bg-zinc-50 dark:bg-ios-elevatedDark border border-ios-borderLight dark:border-ios-borderDark focus:outline-none focus:ring-2 focus:ring-blue-500/40">${savedCfg ? JSON.stringify(savedCfg, null, 2) : ''}</textarea>
-              <button onclick="saveFirebaseConfigFromUI()" class="w-full py-2 rounded-xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-semibold transition">
-                Update Firebase Config
-              </button>
+          <div class="card" style="margin-bottom:10px;">
+            <div style="font-size:13px;font-weight:700;">GitHub Private Gist Sync</div>
+            <div class="card-meta">${meta.lastGithubSync ? "Last Gist sync: " + escapeHTML(meta.lastGithubSync) : "Push opshubog-console-state.json to private Gist"}</div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <input id="github-pat-input" class="input form-input mono" style="font-size:12px;" type="password" placeholder="ghp_... (GitHub token with gist scope)" value="${escapeHTML(meta.githubPat || "")}" />
+              <button class="btn btn-primary btn-sm" type="button" onclick="syncToGithubGist()">Sync</button>
+            </div>
+          </div>
+
+          <details style="margin-top:10px;">
+            <summary style="font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;">Firebase Web Config (Pre-configured: opshubog)</summary>
+            <div class="form-group">
+              <textarea id="custom-fb-config" class="textarea form-input mono" rows="5" style="font-size:11px;">${escapeHTML(JSON.stringify(cfg, null, 2))}</textarea>
+              <button class="btn btn-ghost btn-sm btn-full" style="margin-top:8px;" type="button" onclick="saveCustomFirebaseConfig()">Save Custom Config</button>
             </div>
           </details>
         </div>
-      `;
-      window.openModalWithHTML(html);
-    };
+      `);
+    }
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const cfg = getSavedFirebaseConfig();
-      if (cfg) {
-        window.initFirebaseSync(cfg);
-      } else {
-        updateSyncBadge('local', 'Local Only');
-      }
+    /* =========================================================================
+       8. BOOTSTRAP ON DOMContentLoaded
+       ========================================================================= */
+    document.addEventListener("DOMContentLoaded", function () {
+      renderApp();
+      setTimeout(initFirebaseSafely, 50);
     });
   </script>
-  <script>
+</body>
+</html>
